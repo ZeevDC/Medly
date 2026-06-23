@@ -14,24 +14,29 @@ interface DiagnosticWeakspotsProps {
   failedAnswersLogs: WarningLog[];
   setFailedAnswersLogs: React.Dispatch<React.SetStateAction<WarningLog[]>>;
   setActiveTab: (tab: string) => void;
+  currentUserEmail?: string;
+  key?: React.Key;
 }
 
 export default function DiagnosticWeakspots({
   failedAnswersLogs,
   setFailedAnswersLogs,
   setActiveTab,
+  currentUserEmail
 }: DiagnosticWeakspotsProps) {
+
+  const isFresh = currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
 
   // Subject proficiency values mapping
   const proficiencyData = [
-    { subject: 'Biology', score: 85, trend: 'upward', color: 'bg-emerald-500' },
-    { subject: 'Chemistry', score: 62, trend: 'downward', color: 'bg-rose-500' },
-    { subject: 'Physics', score: 48, trend: 'consecutive-fails', color: 'bg-red-600' },
-    { subject: 'Social Science', score: 92, trend: 'upward', color: 'bg-sky-500' },
-    { subject: 'Quantitative Reasoning', score: 70, trend: 'stable', color: 'bg-amber-500' },
-    { subject: 'Perceptual Acuity', score: 88, trend: 'upward', color: 'bg-teal-500' },
-    { subject: 'Verbal Aptitude', score: 79, trend: 'stable', color: 'bg-purple-500' },
-    { subject: 'Inductive Reasoning', score: 66, trend: 'downward', color: 'bg-orange-500' },
+    { subject: 'Biology', score: isFresh ? 15 : 85, trend: isFresh ? 'stable' : 'upward', color: 'bg-emerald-500' },
+    { subject: 'Chemistry', score: isFresh ? 12 : 62, trend: isFresh ? 'stable' : 'downward', color: 'bg-rose-500' },
+    { subject: 'Physics', score: isFresh ? 10 : 48, trend: isFresh ? 'stable' : 'consecutive-fails', color: 'bg-red-600' },
+    { subject: 'Social Science', score: isFresh ? 18 : 92, trend: isFresh ? 'stable' : 'upward', color: 'bg-sky-500' },
+    { subject: 'Quantitative Reasoning', score: isFresh ? 14 : 70, trend: isFresh ? 'stable' : 'stable', color: 'bg-amber-500' },
+    { subject: 'Perceptual Acuity', score: isFresh ? 20 : 88, trend: isFresh ? 'stable' : 'upward', color: 'bg-teal-500' },
+    { subject: 'Verbal Aptitude', score: isFresh ? 25 : 79, trend: isFresh ? 'stable' : 'stable', color: 'bg-purple-500' },
+    { subject: 'Inductive Reasoning', score: isFresh ? 11 : 66, trend: isFresh ? 'stable' : 'downward', color: 'bg-orange-500' },
   ];
 
   const clearTrigger = (id: string) => {

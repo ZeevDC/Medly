@@ -148,7 +148,7 @@ export default function AuthPage({ onSuccess, defaultEmail }: AuthPageProps) {
             <h1 className="text-2xl sm:text-3xl font-black text-slate-850 tracking-tight flex items-center justify-center gap-2">
               Medly
             </h1>
-            <p className="text-xs text-slate-505 font-bold mt-1 uppercase tracking-wider">Philippine NMAT Prep Ecosystem</p>
+            <p className="text-xs text-slate-505 font-bold mt-1 uppercase tracking-wider">Nmat Prep Ecosystem</p>
           </div>
         </div>
 

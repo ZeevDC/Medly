@@ -7,6 +7,8 @@ interface AchievementsMetricsProps {
   undergradGwa: string;
   studyLogs?: Array<{ id: string; subject: string; hours: number; date: string }>;
   failedAnswersLogs?: any[];
+  currentUserEmail?: string;
+  key?: React.Key;
 }
 
 export default function AchievementsMetrics({
@@ -14,16 +16,22 @@ export default function AchievementsMetrics({
   solvedDrills,
   undergradGwa,
   studyLogs = [],
-  failedAnswersLogs = []
+  failedAnswersLogs = [],
+  currentUserEmail
 }: AchievementsMetricsProps) {
   
+  const isFresh = currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
+
   // Calculate simulated pass probability based on GWA and solved drills
-  const baseGwa = parseFloat(undergradGwa) || 1.45;
+  const baseGwa = parseFloat(undergradGwa) || (isFresh ? 3.00 : 1.45);
   const drillBonus = Math.min(15, Math.floor(solvedDrills / 2));
-  const calculatedProbability = Math.min(99, Math.max(35, Math.round((100 - (baseGwa - 1.0) * 35) + drillBonus)));
+  const calculatedProbability = isFresh && solvedDrills === 0 && streak === 0
+    ? 0
+    : Math.min(99, Math.max(0, Math.round((100 - (baseGwa - 1.0) * 35) + drillBonus)));
 
   // Target recommendations based on calculation
   const getProbabilityTier = () => {
+    if (calculatedProbability === 0) return { label: '⚖️ Standard Baseline (Pending diagnostic inputs)', color: 'text-slate-700 bg-slate-50 border-slate-200' };
     if (calculatedProbability >= 90) return { label: '🌟 Elite Target (UPCM / PLM Qualified)', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
     if (calculatedProbability >= 75) return { label: '🛡️ Competitive (UST / ASMPH Target Stable)', color: 'text-sky-700 bg-sky-50 border-sky-200' };
     return { label: '⚠️ Borderline Passing Centile Index', color: 'text-amber-700 bg-amber-50 border-amber-200' };
@@ -34,12 +42,12 @@ export default function AchievementsMetrics({
 
   // Subject proficiency radar parameters
   const categories = [
-    { name: 'Biology', base: 75, multiplier: 3, advice: 'Excel at Cell Bio & Physiology. Core weight on medical biochemistry cycles.' },
-    { name: 'Chemistry', base: 65, multiplier: 4, advice: 'Focus on Organic structures, stoichiometry reactions & chemical equilibria.' },
-    { name: 'Physics', base: 55, multiplier: 5, advice: 'Needs formulas recall for Optics, thermodynamics & kinematic vectors.' },
-    { name: 'Social Science', base: 80, multiplier: 2, advice: 'Review sociological theories hierarchy, deviance models & psychology.' },
-    { name: 'Quantitative', base: 70, multiplier: 3, advice: 'Strengthen rapid algebra speed drills & mathematical word reasoning.' },
-    { name: 'Verbal', base: 85, multiplier: 1, advice: 'Maintain speed margins under 45 seconds for critical reading paragraphs.' },
+    { name: 'Biology', base: isFresh ? 15 : 75, multiplier: 3, advice: 'Excel at Cell Bio & Physiology. Core weight on medical biochemistry cycles.' },
+    { name: 'Chemistry', base: isFresh ? 12 : 65, multiplier: 4, advice: 'Focus on Organic structures, stoichiometry reactions & chemical equilibria.' },
+    { name: 'Physics', base: isFresh ? 10 : 55, multiplier: 5, advice: 'Needs formulas recall for Optics, thermodynamics & kinematic vectors.' },
+    { name: 'Social Science', base: isFresh ? 20 : 80, multiplier: 2, advice: 'Review sociological theories hierarchy, deviance models & psychology.' },
+    { name: 'Quantitative', base: isFresh ? 15 : 70, multiplier: 3, advice: 'Strengthen rapid algebra speed drills & mathematical word reasoning.' },
+    { name: 'Verbal', base: isFresh ? 25 : 85, multiplier: 1, advice: 'Maintain speed margins under 45 seconds for critical reading paragraphs.' },
   ];
 
   // Calculate dynamic proficiency based on state
@@ -111,7 +119,7 @@ export default function AchievementsMetrics({
 
     // Mock template backfill to make historical heatmap look premium and lively while preserving user actual logs
     let baseMockHours = 0;
-    if (dayNum < 18) {
+    if (!isFresh && dayNum < 18) {
       baseMockHours = (dayNum * 7) % 5 === 0 ? 4.5 : (dayNum * 3) % 4 === 0 ? 2 : 0;
     }
     const finalHours = loggedHours || baseMockHours;
@@ -127,7 +135,7 @@ export default function AchievementsMetrics({
 
   // Badges lists
   const [selectedBadge, setSelectedBadge] = useState<any | null>(null);
-  const totalStudyHours = studyLogs.reduce((acc, curr) => acc + curr.hours, 0) + 12; // 12h default simulation base
+  const totalStudyHours = studyLogs.reduce((acc, curr) => acc + curr.hours, 0) + (isFresh ? 0 : 12); // 12h default simulation base
   const uniqueSubjectsCount = new Set(studyLogs.map(l => l.subject)).size;
 
   const badges = [

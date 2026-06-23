@@ -125,7 +125,7 @@ export default function Navigation({
                     Medly
                     <span className="animate-pulse text-base">{themeCfg.emoji}</span>
                   </span>
-                  <span className="text-[10px] block text-slate-500 font-bold leading-none uppercase tracking-wide">Philippine NMAT & Med</span>
+                  <span className="text-[10px] block text-slate-500 font-bold leading-none uppercase tracking-wide">Nmat Prep</span>
                 </div>
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function Navigation({
             <div className="hidden md:flex items-center space-x-4 text-sm ml-6">
               <div className={`flex items-center space-x-1.5 px-3 py-1 ${themeCfg.accentBg} ${themeCfg.accentText} ${themeCfg.accentBorder} border rounded-full font-bold text-xs`}>
                 <Award className="w-3.5 h-3.5" />
-                <span>Target: <strong className="font-black">{nmatGoal || 95}+ PR</strong></span>
+                <span>Target: <strong className="font-black">{nmatGoal > 0 ? `${nmatGoal}+ PR` : 'Not Set'}</strong></span>
               </div>
 
               <div className="flex items-center space-x-1.5 px-3 py-1 bg-amber-50 text-amber-805 rounded-full font-black text-xs border border-amber-200 shadow-2xs animate-pulse">
@@ -226,7 +226,7 @@ export default function Navigation({
               <span className="flex items-center gap-1">
                 <Award className="w-3.5 h-3.5 text-sky-500" /> Target PR:
               </span>
-              <span className="text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md font-extrabold">{nmatGoal || 95}+ Percentile</span>
+              <span className="text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md font-extrabold">{nmatGoal > 0 ? `${nmatGoal}+ Percentile` : 'Not Set'}</span>
             </div>
             
             <div className="flex items-center justify-between text-xs font-bold text-slate-750">

@@ -1570,7 +1570,7 @@ export default function Dashboard({
           <p className={`max-w-2xl text-sm leading-relaxed ${
             isOffline ? 'text-amber-900' : 'text-sky-100/90'
           }`}>
-            Your NMAT target score of <span className="font-bold underline text-amber-300">{nmatGoal || 95} Centile</span> is currently synchronized to ASMPH, UPCM, and PLM profiles. Let's finish your SRS cards and practice inductive loops today!
+            Your NMAT target score of <span className="font-bold underline text-amber-300">{nmatGoal > 0 ? `${nmatGoal} Centile` : 'Not Set'}</span> is currently synchronized to ASMPH, UPCM, and PLM profiles. Let's finish your SRS cards and practice inductive loops today!
           </p>
 
           <div className="pt-2 flex flex-wrap gap-3">

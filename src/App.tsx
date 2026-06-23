@@ -47,10 +47,36 @@ export default function App() {
   } | null>(null);
   const [isDataLight, setIsDataLight] = useState<boolean>(false);
   
+  // Synchronously load authenticated email first to prevent flash/overwrite of pre-populated data
+  const [studentEmail, setStudentEmail] = useState<string>(() => {
+    try {
+      const isAuthed = localStorage.getItem('medly_is_authenticated') === 'true';
+      const stored = localStorage.getItem('medly_student_email');
+      return isAuthed && stored ? stored : 'studyfilesbyz@gmail.com';
+    } catch {
+      return 'studyfilesbyz@gmail.com';
+    }
+  });
+
+  const [studentName, setStudentName] = useState<string>(() => {
+    try {
+      const isAuthed = localStorage.getItem('medly_is_authenticated') === 'true';
+      const stored = localStorage.getItem('medly_student_name');
+      return isAuthed && stored ? stored : 'Juan Dela Cruz';
+    } catch {
+      return 'Juan Dela Cruz';
+    }
+  });
+
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>(studentEmail);
+
+  const isFresh = studentEmail.trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
+
   const [nmatGoal, setNmatGoal] = useState<number>(() => {
     try {
-      const stored = localStorage.getItem('medly_nmat_goal');
-      return stored ? parseInt(stored) : 95;
+      const emailKey = studentEmail.trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_nmat_goal_${emailKey}`);
+      return stored ? parseInt(stored) : (emailKey !== 'studyfilesbyz@gmail.com' ? 0 : 95);
     } catch {
       return 95;
     }
@@ -58,8 +84,9 @@ export default function App() {
 
   const [undergradGwa, setUndergradGwa] = useState<string>(() => {
     try {
-      const stored = localStorage.getItem('medly_undergrad_gwa');
-      return stored || '1.45';
+      const emailKey = studentEmail.trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_undergrad_gwa_${emailKey}`);
+      return stored || (emailKey !== 'studyfilesbyz@gmail.com' ? '3.00' : '1.45');
     } catch {
       return '1.45';
     }
@@ -67,7 +94,8 @@ export default function App() {
 
   const [streak, setStreak] = useState<number>(() => {
     try {
-      const stored = localStorage.getItem('medly_streak');
+      const emailKey = studentEmail.trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_streak_${emailKey}`);
       return stored ? parseInt(stored) : 0;
     } catch {
       return 0;
@@ -76,7 +104,8 @@ export default function App() {
 
   const [solvedDrills, setSolvedDrills] = useState<number>(() => {
     try {
-      const stored = localStorage.getItem('medly_solved_drills');
+      const emailKey = studentEmail.trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_solved_drills_${emailKey}`);
       return stored ? parseInt(stored) : 0;
     } catch {
       return 0;
@@ -108,7 +137,6 @@ export default function App() {
     }
   });
 
-  const [currentUserEmail, setCurrentUserEmail] = useState<string>('studyfilesbyz@gmail.com');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
       return localStorage.getItem('medly_is_authenticated') === 'true';
@@ -120,9 +148,11 @@ export default function App() {
   const handleAuthSuccess = (email: string, displayName: string) => {
     setIsAuthenticated(true);
     localStorage.setItem('medly_is_authenticated', 'true');
+    localStorage.setItem('medly_student_email', email);
+    localStorage.setItem('medly_student_name', displayName || 'Juan Dela Cruz');
     setStudentEmail(email);
     setCurrentUserEmail(email);
-    setStudentName(displayName);
+    setStudentName(displayName || 'Juan Dela Cruz');
   };
 
   const handleSignOut = async () => {
@@ -133,11 +163,14 @@ export default function App() {
     }
     setIsAuthenticated(false);
     localStorage.removeItem('medly_is_authenticated');
+    localStorage.removeItem('medly_student_email');
+    localStorage.removeItem('medly_student_name');
     setStudentEmail('studyfilesbyz@gmail.com');
     setCurrentUserEmail('studyfilesbyz@gmail.com');
     setStudentName('Juan Dela Cruz');
     setActiveTab('dashboard');
   };
+
   const [currentTheme, setCurrentTheme] = useState<string>(() => {
     try {
       const stored = localStorage.getItem('medly_active_theme');
@@ -157,31 +190,59 @@ export default function App() {
   });
 
   // State hooks for Student ID / Profile Preferences Theme
-  const [studentName, setStudentName] = useState('Juan Dela Cruz');
-  const [studentEmail, setStudentEmail] = useState('studyfilesbyz@gmail.com');
   const [regNumber, setRegNumber] = useState('NMAT-2026-8809');
   const [candidateLevel, setCandidateLevel] = useState('Undergraduate Senior Year');
-  const [accuracyIndex, setAccuracyIndex] = useState('86.4%');
+  
+  const [accuracyIndex, setAccuracyIndex] = useState<string>(() => {
+    try {
+      const emailKey = studentEmail.trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_accuracy_index_${emailKey}`);
+      return stored || (emailKey !== 'studyfilesbyz@gmail.com' ? '0.0%' : '86.4%');
+    } catch {
+      return '86.4%';
+    }
+  });
+
   const [developerApiKey, setDeveloperApiKey] = useState('GEMINI_KEY_SANDBOX');
 
   // Shared Clinical Practice failed answers logs (Diagnostic Warning triggers)
-  const [failedAnswersLogs, setFailedAnswersLogs] = useState<any[]>([
-    { id: 'log-1', subject: 'Physics', consecutiveFailCount: 3, alertLvl: 'High Danger', lastFailureDate: 'Just now', remedialTopic: 'Kinematics Speed Vector' },
-    { id: 'log-2', subject: 'Chemistry', consecutiveFailCount: 2, alertLvl: 'Moderate Warning', lastFailureDate: '2 hours ago', remedialTopic: 'Stoichiometry Mass' }
-  ]);
+  const [failedAnswersLogs, setFailedAnswersLogs] = useState<any[]>(() => {
+    try {
+      const emailKey = studentEmail.trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_failed_answers_logs_${emailKey}`);
+      if (stored) return JSON.parse(stored);
+      if (emailKey !== 'studyfilesbyz@gmail.com') return [];
+    } catch {}
+    return [
+      { id: 'log-1', subject: 'Physics', consecutiveFailCount: 3, alertLvl: 'High Danger', lastFailureDate: 'Just now', remedialTopic: 'Kinematics Speed Vector' },
+      { id: 'log-2', subject: 'Chemistry', consecutiveFailCount: 2, alertLvl: 'Moderate Warning', lastFailureDate: '2 hours ago', remedialTopic: 'Stoichiometry Mass' }
+    ];
+  });
 
   // Vouchers and transaction tickets
-  const [vouchers, setVouchers] = useState<any[]>([
-    { id: 'vch-1', studentEmail: 'juan_dela_cruz@gmail.com', phone: '09173322114', tier: 'Pro Suite (₱79)', refNumber: '8823291039', amount: 79, status: 'Pending Approval', date: 'June 18, 2026' }
-  ]);
+  const [vouchers, setVouchers] = useState<any[]>(() => {
+    try {
+      const emailKey = studentEmail.trim().toLowerCase();
+      if (emailKey !== 'studyfilesbyz@gmail.com') return [];
+    } catch {}
+    return [
+      { id: 'vch-1', studentEmail: 'juan_dela_cruz@gmail.com', phone: '09173322114', tier: 'Pro Suite (₱79)', refNumber: '8823291039', amount: 79, status: 'Pending Approval', date: 'June 18, 2026' }
+    ];
+  });
 
   // Announcements list
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
   // Tickets
-  const [tickets, setTickets] = useState<any[]>([
-    { id: 'tkt-1', subject: 'Formula sheet PDF rendering mismatch', description: 'The perceptual acuity matrix sheets are cut off in PWA landscape view on smaller Android screens.', status: 'Under Investigation', date: 'June 17, 2026' }
-  ]);
+  const [tickets, setTickets] = useState<any[]>(() => {
+    try {
+      const emailKey = studentEmail.trim().toLowerCase();
+      if (emailKey !== 'studyfilesbyz@gmail.com') return [];
+    } catch {}
+    return [
+      { id: 'tkt-1', subject: 'Formula sheet PDF rendering mismatch', description: 'The perceptual acuity matrix sheets are cut off in PWA landscape view on smaller Android screens.', status: 'Under Investigation', date: 'June 17, 2026' }
+    ];
+  });
 
   // Feedbacks
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
@@ -242,20 +303,48 @@ export default function App() {
 
     if (stateNameChanged || stateEmailChanged || stateSuiteChanged) {
       if (stateEmailChanged) {
-        // Always reset ALL statistics on new user sign-up/creation!
-        setStreak(0);
-        setSolvedDrills(0);
-        setHabitTracker({
-          'Active Recall Spacing': true,
+        const emailKey = studentEmail.trim().toLowerCase();
+        const isFreshUser = emailKey !== 'studyfilesbyz@gmail.com';
+
+        const storedStreak = localStorage.getItem(`medly_streak_${emailKey}`);
+        setStreak(storedStreak ? parseInt(storedStreak) : 0);
+
+        const storedGoal = localStorage.getItem(`medly_nmat_goal_${emailKey}`);
+        setNmatGoal(storedGoal ? parseInt(storedGoal) : (isFreshUser ? 0 : 95));
+
+        const storedGwa = localStorage.getItem(`medly_undergrad_gwa_${emailKey}`);
+        setUndergradGwa(storedGwa || (isFreshUser ? '3.00' : '1.45'));
+
+        const storedDrills = localStorage.getItem(`medly_solved_drills_${emailKey}`);
+        setSolvedDrills(storedDrills ? parseInt(storedDrills) : 0);
+
+        const storedAccuracy = localStorage.getItem(`medly_accuracy_index_${emailKey}`);
+        setAccuracyIndex(storedAccuracy || (isFreshUser ? '0.0%' : '86.4%'));
+
+        const storedHabits = localStorage.getItem(`medly_habit_tracker_${emailKey}`);
+        setHabitTracker(storedHabits ? JSON.parse(storedHabits) : {
+          'Active Recall Spacing': !isFreshUser,
           'Physics Formulas Revision': false,
-          'Anki Loop Queue': true
+          'Anki Loop Queue': !isFreshUser
         });
-        setStudyLogs([]);
-        setMoodLogs([]);
-        setFailedAnswersLogs([]);
-        setNmatGoal(95);
-        setUndergradGwa('1.45');
-        setAccuracyIndex('0.0%');
+
+        const storedStudyLogs = localStorage.getItem(`medly_study_logs_${emailKey}`);
+        setStudyLogs(storedStudyLogs ? JSON.parse(storedStudyLogs) : (isFreshUser ? [] : [
+          { id: 'sl-1', subject: 'Biology', hours: 3, date: '2026-06-18' },
+          { id: 'sl-2', subject: 'Physics', hours: 2, date: '2026-06-17' }
+        ]));
+
+        const storedMoodLogs = localStorage.getItem(`medly_mood_logs_${emailKey}`);
+        setMoodLogs(storedMoodLogs ? JSON.parse(storedMoodLogs) : (isFreshUser ? [] : [
+          { id: 'ml-1', mood: 'Focused 🧠', date: '2026-06-18', note: 'Mastered Krebs cycle kinetics.' }
+        ]));
+
+        const storedFailLogs = localStorage.getItem(`medly_failed_answers_logs_${emailKey}`);
+        setFailedAnswersLogs(storedFailLogs ? JSON.parse(storedFailLogs) : (isFreshUser ? [] : [
+          { id: 'log-1', subject: 'Physics', consecutiveFailCount: 3, alertLvl: 'High Danger', lastFailureDate: 'Just now', remedialTopic: 'Kinematics Speed Vector' },
+          { id: 'log-2', subject: 'Chemistry', consecutiveFailCount: 2, alertLvl: 'Moderate Warning', lastFailureDate: '2 hours ago', remedialTopic: 'Stoichiometry Mass' }
+        ]));
+
         setUserTargetSchools([]);
         setSrsConcepts([]);
         setNotifications([]);
@@ -315,11 +404,13 @@ export default function App() {
   // Study habit, calendars and telemetry sheets logs
   const [habitTracker, setHabitTracker] = useState<Record<string, boolean>>(() => {
     try {
-      const stored = localStorage.getItem('medly_habit_tracker');
+      const emailKey = studentEmail.trim().toLowerCase();
+      const isFreshUser = emailKey !== 'studyfilesbyz@gmail.com';
+      const stored = localStorage.getItem(`medly_habit_tracker_${emailKey}`);
       return stored ? JSON.parse(stored) : {
-        'Active Recall Spacing': true,
+        'Active Recall Spacing': !isFreshUser,
         'Physics Formulas Revision': false,
-        'Anki Loop Queue': true
+        'Anki Loop Queue': !isFreshUser
       };
     } catch {
       return {
@@ -332,11 +423,13 @@ export default function App() {
 
   const [studyLogs, setStudyLogs] = useState<any[]>(() => {
     try {
-      const stored = localStorage.getItem('medly_study_logs');
-      return stored ? JSON.parse(stored) : [
+      const emailKey = studentEmail.trim().toLowerCase();
+      const isFreshUser = emailKey !== 'studyfilesbyz@gmail.com';
+      const stored = localStorage.getItem(`medly_study_logs_${emailKey}`);
+      return stored ? JSON.parse(stored) : (isFreshUser ? [] : [
         { id: 'sl-1', subject: 'Biology', hours: 3, date: '2026-06-18' },
         { id: 'sl-2', subject: 'Physics', hours: 2, date: '2026-06-17' }
-      ];
+      ]);
     } catch {
       return [
         { id: 'sl-1', subject: 'Biology', hours: 3, date: '2026-06-18' },
@@ -347,10 +440,12 @@ export default function App() {
 
   const [moodLogs, setMoodLogs] = useState<any[]>(() => {
     try {
-      const stored = localStorage.getItem('medly_mood_logs');
-      return stored ? JSON.parse(stored) : [
+      const emailKey = studentEmail.trim().toLowerCase();
+      const isFreshUser = emailKey !== 'studyfilesbyz@gmail.com';
+      const stored = localStorage.getItem(`medly_mood_logs_${emailKey}`);
+      return stored ? JSON.parse(stored) : (isFreshUser ? [] : [
         { id: 'ml-1', mood: 'Focused 🧠', date: '2026-06-18', note: 'Mastered Krebs cycle kinetics.' }
-      ];
+      ]);
     } catch {
       return [
         { id: 'ml-1', mood: 'Focused 🧠', date: '2026-06-18', note: 'Mastered Krebs cycle kinetics.' }
@@ -360,21 +455,24 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_habit_tracker', JSON.stringify(habitTracker));
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_habit_tracker_${emailKey}`, JSON.stringify(habitTracker));
     } catch {}
-  }, [habitTracker]);
+  }, [habitTracker, studentEmail]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_study_logs', JSON.stringify(studyLogs));
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_study_logs_${emailKey}`, JSON.stringify(studyLogs));
     } catch {}
-  }, [studyLogs]);
+  }, [studyLogs, studentEmail]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_mood_logs', JSON.stringify(moodLogs));
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_mood_logs_${emailKey}`, JSON.stringify(moodLogs));
     } catch {}
-  }, [moodLogs]);
+  }, [moodLogs, studentEmail]);
 
   const wipeAllData = () => {
     localStorage.clear();
@@ -419,39 +517,55 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_nmat_goal', String(nmatGoal));
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_nmat_goal_${emailKey}`, String(nmatGoal));
     } catch {}
-  }, [nmatGoal]);
+  }, [nmatGoal, studentEmail]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_undergrad_gwa', undergradGwa);
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_undergrad_gwa_${emailKey}`, undergradGwa);
     } catch {}
-  }, [undergradGwa]);
+  }, [undergradGwa, studentEmail]);
 
   // Automatically calculate the student recall streak based on:
   // - Unique study days logged in studyLogs
   // - Completed active recall checklist items in habitTracker
   // - Solved practice drills bonus (1 day for every 4 drills completed)
   useEffect(() => {
+    const emailKey = studentEmail.trim().toLowerCase();
+    const isFresh = emailKey !== 'studyfilesbyz@gmail.com';
     const uniqueDays = new Set((studyLogs || []).map((l: any) => l.date)).size;
     const completedHabits = Object.values(habitTracker || {}).filter(Boolean).length;
     const drillsBonus = Math.floor((solvedDrills || 0) / 4);
-    const computed = Math.max(1, uniqueDays + completedHabits + drillsBonus);
+    let computed = uniqueDays + completedHabits + drillsBonus;
+    if (!isFresh) {
+      computed = Math.max(1, computed);
+    }
     setStreak(computed);
-  }, [studyLogs, habitTracker, solvedDrills]);
+  }, [studyLogs, habitTracker, solvedDrills, studentEmail]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_streak', String(streak));
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_streak_${emailKey}`, String(streak));
     } catch {}
-  }, [streak]);
+  }, [streak, studentEmail]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_solved_drills', String(solvedDrills));
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_solved_drills_${emailKey}`, String(solvedDrills));
     } catch {}
-  }, [solvedDrills]);
+  }, [solvedDrills, studentEmail]);
+
+  useEffect(() => {
+    try {
+      const emailKey = studentEmail.trim().toLowerCase();
+      localStorage.setItem(`medly_accuracy_index_${emailKey}`, accuracyIndex);
+    } catch {}
+  }, [accuracyIndex, studentEmail]);
 
   useEffect(() => {
     try {
@@ -597,6 +711,8 @@ export default function App() {
 
         {activeTab === 'achievements-metrics' && (
           <AchievementsMetrics
+            key={studentEmail}
+            currentUserEmail={studentEmail}
             streak={streak}
             solvedDrills={solvedDrills}
             undergradGwa={undergradGwa}
@@ -642,6 +758,8 @@ export default function App() {
 
         {activeTab === 'diagnostic-weakspots' && (
           <DiagnosticWeakspots
+            key={studentEmail}
+            currentUserEmail={studentEmail}
             failedAnswersLogs={failedAnswersLogs}
             setFailedAnswersLogs={setFailedAnswersLogs}
             setActiveTab={setActiveTab}
@@ -650,6 +768,8 @@ export default function App() {
 
         {activeTab === 'study-planner-calendar' && (
           <StudyPlannerCalendar
+            key={studentEmail}
+            currentUserEmail={studentEmail}
             habitTracker={habitTracker}
             setHabitTracker={setHabitTracker}
             studyLogs={studyLogs}
@@ -738,7 +858,7 @@ export default function App() {
       <footer className={`${activeThemeConfig.cardBg} border-t ${activeThemeConfig.borderClass} py-6 mt-12`}>
         <div className="max-w-7xl mx-auto px-4 text-center space-y-2">
           <p className={`text-[11px] ${activeThemeConfig.textSecondary}`} id="medly-footer-text">
-            Medly for Philippine NMAT
+            Medly for Nmat Prep
           </p>
           <div className="flex justify-center space-x-4 text-[10px] opacity-70 font-bold">
             <span className={activeThemeConfig.accentText}>Active Theme: <strong className="uppercase font-black">{currentTheme}</strong></span>

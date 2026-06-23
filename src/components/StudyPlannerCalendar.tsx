@@ -8,6 +8,8 @@ interface StudyPlannerCalendarProps {
   setStudyLogs: React.Dispatch<React.SetStateAction<Array<{ id: string; subject: string; hours: number; date: string }>>>;
   moodLogs: Array<{ id: string; mood: string; date: string; note: string }>;
   setMoodLogs: React.Dispatch<React.SetStateAction<Array<{ id: string; mood: string; date: string; note: string }>>>;
+  currentUserEmail?: string;
+  key?: React.Key;
 }
 
 interface NmatEvent {
@@ -24,38 +26,38 @@ export default function StudyPlannerCalendar({
   setStudyLogs,
   moodLogs,
   setMoodLogs,
+  currentUserEmail,
 }: StudyPlannerCalendarProps) {
   
   // Custom habits state
   const [newHabit, setNewHabit] = useState('');
   const [customHabits, setCustomHabits] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem('medly_custom_habits_list');
-      return stored ? JSON.parse(stored) : ['Active Recall Spacing', 'Physics Formulas Revision', 'Anki Loop Queue'];
-    } catch {
+      const emailKey = (currentUserEmail ?? 'studyfilesbyz@gmail.com').trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_custom_habits_list_${emailKey}`);
+      if (stored) return JSON.parse(stored);
+      if (emailKey !== 'studyfilesbyz@gmail.com') return [];
       return ['Active Recall Spacing', 'Physics Formulas Revision', 'Anki Loop Queue'];
+    } catch {
+      return (currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com') ? [] : ['Active Recall Spacing', 'Physics Formulas Revision', 'Anki Loop Queue'];
     }
   });
 
   // Save custom habit names
   useEffect(() => {
     try {
-      localStorage.setItem('medly_custom_habits_list', JSON.stringify(customHabits));
+      const emailKey = (currentUserEmail ?? 'studyfilesbyz@gmail.com').trim().toLowerCase();
+      localStorage.setItem(`medly_custom_habits_list_${emailKey}`, JSON.stringify(customHabits));
     } catch {}
-  }, [customHabits]);
+  }, [customHabits, currentUserEmail]);
 
   // Customizable NMAT Calendar events state
   const [nmatEvents, setNmatEvents] = useState<NmatEvent[]>(() => {
     try {
-      const stored = localStorage.getItem('medly_nmat_events');
-      return stored ? JSON.parse(stored) : [
-        { id: '1', title: 'CEM Registration Closes', date: '2026-06-30', type: 'milestone' },
-        { id: '2', title: 'Part 1 Mock Simulator cohort', date: '2026-07-05', type: 'cohort' },
-        { id: '3', title: 'National Exam Cycle Starts', date: '2026-11-15', type: 'exam' },
-        { id: '4', title: 'Chemistry Volumetrics Group Session', date: '2026-06-25', type: 'personal' },
-        { id: '5', title: 'Pre-Med Admissions open UPCM', date: '2026-06-15', type: 'milestone' }
-      ];
-    } catch {
+      const emailKey = (currentUserEmail ?? 'studyfilesbyz@gmail.com').trim().toLowerCase();
+      const stored = localStorage.getItem(`medly_nmat_events_${emailKey}`);
+      if (stored) return JSON.parse(stored);
+      if (emailKey !== 'studyfilesbyz@gmail.com') return [];
       return [
         { id: '1', title: 'CEM Registration Closes', date: '2026-06-30', type: 'milestone' },
         { id: '2', title: 'Part 1 Mock Simulator cohort', date: '2026-07-05', type: 'cohort' },
@@ -63,14 +65,23 @@ export default function StudyPlannerCalendar({
         { id: '4', title: 'Chemistry Volumetrics Group Session', date: '2026-06-25', type: 'personal' },
         { id: '5', title: 'Pre-Med Admissions open UPCM', date: '2026-06-15', type: 'milestone' }
       ];
+    } catch {
+      return (currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com') ? [] : [
+        { id: '1', title: 'CEM Registration Closes', date: '2026-06-30', type: 'milestone' },
+        { id: '2', title: 'Part 1 Mock Simulator cohort', date: '2026-07-05', type: 'cohort' },
+        { id: '3', title: 'National Exam Cycle Starts', date: '2026-11-15', type: 'exam' },
+        { id: '4', title: 'Chemistry Volumetrics Group Session', date: '2026-06-25', type: 'personal' },
+        { id: '5', title: 'Pre-Med Admissions open UPCM', date: '2026-06-15', type: 'milestone' }
+      ];
     }
   });
 
   useEffect(() => {
     try {
-      localStorage.setItem('medly_nmat_events', JSON.stringify(nmatEvents));
+      const emailKey = (currentUserEmail ?? 'studyfilesbyz@gmail.com').trim().toLowerCase();
+      localStorage.setItem(`medly_nmat_events_${emailKey}`, JSON.stringify(nmatEvents));
     } catch {}
-  }, [nmatEvents]);
+  }, [nmatEvents, currentUserEmail]);
 
   // Selected calendar cell for detail view/quick logs
   const [selectedDay, setSelectedDay] = useState<number>(20); // Default highlighting June 20, 2026
