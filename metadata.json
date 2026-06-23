@@ -1,0 +1,6 @@
+{
+  "name": "Medly",
+  "description": "Premium NMAT prep and med school bridge PWA for Philippine pre-meds and medical students.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Blue Winter Palette - Overriding Emerald to Frosted Arctic-Blue */
+  --color-emerald-50: #f0f7ff;    /* Frosted Crystal Ice */
+  --color-emerald-100: #e0f2fe;   /* Glacier Melt Sky */
+  --color-emerald-200: #bae6fd;   /* Polar Glow */
+  --color-emerald-250: #b9e0ff;   /* Ice Crystal */
+  --color-emerald-300: #93c5fd;   /* Frosted Window */
+  --color-emerald-400: #60a5fa;   /* Winter Morning Skyline */
+  --color-emerald-405: #3b82f6;   /* Ice Pack Blue */
+  --color-emerald-500: #1b4cb4;   /* Icon Deep Clinical Royal Blue */
+  --color-emerald-550: #1b4cb4;   /* Brand Primary Blue */
+  --color-emerald-600: #2563eb;   /* Winter Cobalt */
+  --color-emerald-700: #1e40af;   /* Alpine Shadows */
+  --color-emerald-750: #1e3a8a;   /* Deep Blue Norway Sky */
+  --color-emerald-805: #1e3a8a;   /* Subzero Deep Indigo */
+  --color-emerald-800: #1e3a8a;   /* Arctic Ocean Depths */
+  --color-emerald-850: #172554;   /* Subsurface Abyssal Navy */
+  --color-emerald-900: #111827;   /* Charcoal Polar Night */
+  --color-emerald-950: #030712;   /* Aurora Obsidian Space */
+
+  /* Blue Winter Palette - Overriding Teal to complementary Arctic/Ice variants */
+  --color-teal-50: #f0f9ff;
+  --color-teal-100: #e0f2fe;
+  --color-teal-500: #3b82f6;      /* Accent Heartbeat Blue */
+  --color-teal-600: #1b4cb4;      /* Clinical Brand Blue */
+  --color-teal-700: #1e40af;      /* Alpine Dark */
+  --color-teal-800: #1e3a8a;      /* Navy Frost */
+  --color-teal-905: #172554;      /* Solid Polar Abyssal */
+}

@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "LiveUser": {
+      "title": "LiveUser",
+      "description": "Preregistered student or competitor on the Medly Live rankings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "suite": { "type": "string" },
+        "premed": { "type": "string" },
+        "score": { "type": "number" },
+        "solvedDrills": { "type": "number" },
+        "lastUpdated": { "type": "number" }
+      },
+      "required": ["id", "name", "email", "score"]
+    },
+    "DrillLog": {
+      "title": "DrillLog",
+      "description": "Log of high-yield practice drills taken by a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "testLink": { "type": "string" },
+        "date": { "type": "string" },
+        "score": { "type": "string" }
+      },
+      "required": ["id", "email", "testLink", "date", "score"]
+    },
+    "MockTestLog": {
+      "title": "MockTestLog",
+      "description": "Log of full board mock tests taken by a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "testLink": { "type": "string" },
+        "date": { "type": "string" },
+        "score": { "type": "string" }
+      },
+      "required": ["id", "email", "testLink", "date", "score"]
+    }
+  },
+  "firestore": {
+    "live_users/{userId}": {
+      "schema": "LiveUser",
+      "description": "Medly Live rankings competitor data"
+    },
+    "drill_logs/{drillId}": {
+      "schema": "DrillLog",
+      "description": "High-yield drill entries logged by students"
+    },
+    "mock_test_logs/{mockTestId}": {
+      "schema": "MockTestLog",
+      "description": "Full board mock test entries logged by students"
+    }
+  }
+}
