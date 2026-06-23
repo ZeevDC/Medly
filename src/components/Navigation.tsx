@@ -23,7 +23,8 @@ import {
   FolderOpen,
   BookOpen,
   Activity,
-  Trophy
+  Trophy,
+  LogOut
 } from 'lucide-react';
 import { getTheme } from '../utils/themeStyles';
 
@@ -38,6 +39,7 @@ interface NavigationProps {
   streak: number;
   currentUserEmail: string;
   currentTheme?: string;
+  onSignOut?: () => void;
 }
 
 export default function Navigation({
@@ -51,6 +53,7 @@ export default function Navigation({
   streak,
   currentUserEmail,
   currentTheme = 'cozy-bear',
+  onSignOut,
 }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const themeCfg = getTheme(currentTheme);
@@ -156,6 +159,20 @@ export default function Navigation({
                 <span className="hidden md:inline">Data-Light {isDataLight ? 'ON' : 'OFF'}</span>
                 <span className="md:hidden">{isDataLight ? 'Lite' : 'Full'}</span>
               </button>
+
+              {/* Sign Out Button in Header */}
+              {onSignOut && (
+                <button
+                  onClick={onSignOut}
+                  className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-rose-50 border border-rose-250 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold cursor-pointer transition-all shadow-3xs"
+                  title="Sign Out of your candidate profile"
+                  id="header-signout-btn"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-500" strokeWidth={2.5} />
+                  <span className="hidden sm:inline">Sign Out</span>
+                  <span className="sm:hidden">Exit</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -249,7 +266,19 @@ export default function Navigation({
         </div>
 
         {/* Drawer Footer Settings shortcut */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-2.5">
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex flex-col gap-2.5">
+          {onSignOut && (
+            <button
+              onClick={() => {
+                setIsMenuOpen(false);
+                onSignOut();
+              }}
+              className="w-full py-2.5 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-3xs"
+            >
+              <LogOut className="w-4 h-4 text-rose-500" strokeWidth={2.5} />
+              <span>Sign Out Profile</span>
+            </button>
+          )}
           <div className="text-[10px] text-slate-400 text-center font-medium">
             Medly Pre-Med Community Sync Active
           </div>

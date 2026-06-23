@@ -24,6 +24,11 @@ import CurriculumAdmin from './components/CurriculumAdmin';
 import CommunityDiscussionBoard from './components/CommunityDiscussionBoard';
 import ResourcesPage from './components/ResourcesPage';
 
+// User Authentication Page & Firebase integration
+import AuthPage from './components/AuthPage';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from './lib/firebase';
+
 import { MedSchool, SrsConcept } from './types';
 import { Compass, BookOpen, School, Calculator, ClipboardList, Send, Sparkles } from 'lucide-react';
 
@@ -104,6 +109,35 @@ export default function App() {
   });
 
   const [currentUserEmail, setCurrentUserEmail] = useState<string>('studyfilesbyz@gmail.com');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('medly_is_authenticated') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleAuthSuccess = (email: string, displayName: string) => {
+    setIsAuthenticated(true);
+    localStorage.setItem('medly_is_authenticated', 'true');
+    setStudentEmail(email);
+    setCurrentUserEmail(email);
+    setStudentName(displayName);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn("Firebase Auth sign out pending config:", e);
+    }
+    setIsAuthenticated(false);
+    localStorage.removeItem('medly_is_authenticated');
+    setStudentEmail('studyfilesbyz@gmail.com');
+    setCurrentUserEmail('studyfilesbyz@gmail.com');
+    setStudentName('Juan Dela Cruz');
+    setActiveTab('dashboard');
+  };
   const [currentTheme, setCurrentTheme] = useState<string>(() => {
     try {
       const stored = localStorage.getItem('medly_active_theme');
@@ -123,7 +157,7 @@ export default function App() {
   });
 
   // State hooks for Student ID / Profile Preferences Theme
-  const [studentName, setStudentName] = useState('George Dela Cruz');
+  const [studentName, setStudentName] = useState('Juan Dela Cruz');
   const [studentEmail, setStudentEmail] = useState('studyfilesbyz@gmail.com');
   const [regNumber, setRegNumber] = useState('NMAT-2026-8809');
   const [candidateLevel, setCandidateLevel] = useState('Undergraduate Senior Year');
@@ -159,13 +193,29 @@ export default function App() {
       if (stored) return JSON.parse(stored);
     } catch {}
     return [
-      { id: 'usr-1', name: 'George Dela Cruz', email: 'studyfilesbyz@gmail.com', suite: 'Free Student Tier' },
+      { id: 'usr-1', name: 'Juan Dela Cruz', email: 'studyfilesbyz@gmail.com', suite: 'Free Student Tier' },
       { id: 'usr-2', name: 'Juan Dela Cruz', email: 'juan_dela_cruz@gmail.com', suite: 'Pro Suite (₱79)' },
       { id: 'usr-3', name: 'Hazel Santos', email: 'hazel_santos@gmail.com', suite: 'Clinical Suite (₱149)' },
       { id: 'usr-4', name: 'Jerome Mercado', email: 'jerome_mercado@gmail.com', suite: 'Lifetime Pass (₱249)' },
       { id: 'usr-5', name: 'Christine Alcantara', email: 'christine_alcantara@gmail.com', suite: 'Free Student Tier' }
     ];
   });
+
+  // Sync with actual active Firebase session on mount
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+        localStorage.setItem('medly_is_authenticated', 'true');
+        setStudentEmail(user.email || '');
+        setCurrentUserEmail(user.email || '');
+        if (user.displayName) {
+          setStudentName(user.displayName);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Persist live users registry changes to storage
   useEffect(() => {
@@ -469,6 +519,15 @@ export default function App() {
     return `${activeThemeConfig.bgClass} ${activeThemeConfig.textPrimary}`;
   };
 
+  if (!isAuthenticated) {
+    return (
+      <AuthPage 
+        onSuccess={handleAuthSuccess} 
+        defaultEmail={studentEmail}
+      />
+    );
+  }
+
   return (
     <div className={`min-h-screen flex flex-col font-sans antialiased ${getThemeWrapperClass()} ${
       isDataLight ? 'max-w-6xl mx-auto shadow-none' : ''
@@ -499,6 +558,7 @@ export default function App() {
         streak={streak}
         currentUserEmail={studentEmail}
         currentTheme={currentTheme}
+        onSignOut={handleSignOut}
       />
 
       {/* Main body viewport */}

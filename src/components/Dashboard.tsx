@@ -127,7 +127,7 @@ export default function Dashboard({
 
     // Resolve name of current user from the registry list
     const selfUser = usersList.find(u => u.email?.trim().toLowerCase() === currentUserEmail.trim().toLowerCase());
-    const selfName = selfUser ? selfUser.name : "George Dela Cruz";
+    const selfName = selfUser ? selfUser.name : "Juan Dela Cruz";
     const premed = "UP Manila (BS Biology)";
 
     const selfDoc = {
@@ -1000,7 +1000,7 @@ export default function Dashboard({
                   License Status: {userSuite?.replace(/\s*\(₱\d+\)/g, '')}
                 </span>
                 <h1 className={`text-2xl xs:text-3xl sm:text-4xl font-extrabold tracking-tight ${themeCfg.textColor} font-sans mt-2.5`}>
-                  Hi, George! 👋
+                  Hello, Doc! 👋
                 </h1>
               </div>
 
