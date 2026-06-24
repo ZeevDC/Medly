@@ -68,7 +68,7 @@ export default function CurriculumAdmin({
   setUsersList,
   onResetSelfMetrics,
 }: CurriculumAdminProps) {
-  const isAdmin = currentUserEmail.trim().toLowerCase() === 'studyfilesbyz@gmail.com';
+  const isAdmin = (currentUserEmail || '').trim().toLowerCase() === 'studyfilesbyz@gmail.com';
 
   if (!isAdmin) {
     return (
@@ -290,7 +290,7 @@ export default function CurriculumAdmin({
     try {
       await deleteDoc(doc(db, "live_users", idToDelete));
       setLiveUsersFromDb(prev => prev.filter(u => u.id !== idToDelete && u.docId !== idToDelete));
-      setUsersList(prev => prev.filter(u => u.email.trim().toLowerCase() !== userRecord.email.trim().toLowerCase()));
+      setUsersList(prev => prev.filter(u => (u.email || '').trim().toLowerCase() !== (userRecord.email || '').trim().toLowerCase()));
       alert("Successfully deleted user from Firestore!");
     } catch (err) {
       console.warn("Error deleting user from Firestore:", err);
@@ -306,9 +306,9 @@ export default function CurriculumAdmin({
       await updateDoc(userRef, { suite: newSuite });
       
       setLiveUsersFromDb(prev => prev.map(u => (u.id === activeId || u.docId === activeId) ? { ...u, suite: newSuite } : u));
-      setUsersList(prev => prev.map(u => u.email.trim().toLowerCase() === userRecord.email.trim().toLowerCase() ? { ...u, suite: newSuite } : u));
+      setUsersList(prev => prev.map(u => (u.email || '').trim().toLowerCase() === (userRecord.email || '').trim().toLowerCase() ? { ...u, suite: newSuite } : u));
       
-      const isSelf = userRecord.email.trim().toLowerCase() === currentUserEmail.trim().toLowerCase();
+      const isSelf = (userRecord.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase();
       if (isSelf) {
         setUserSuite(newSuite);
       }
@@ -335,7 +335,7 @@ export default function CurriculumAdmin({
       
       setLiveUsersFromDb(prev => prev.map(u => (u.id === activeId || u.docId === activeId) ? { ...u, score: 85.0, solvedDrills: 0 } : u));
       
-      const isSelf = userRecord.email?.trim().toLowerCase() === currentUserEmail.trim().toLowerCase();
+      const isSelf = (userRecord.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase();
       if (isSelf && onResetSelfMetrics) {
         onResetSelfMetrics();
       }
@@ -473,7 +473,7 @@ export default function CurriculumAdmin({
                        userEmail.includes(searchStr) || 
                        userSuiteName.includes(searchStr);
               }).map(user => {
-                const isSelf = (user.email || '').trim().toLowerCase() === currentUserEmail.trim().toLowerCase();
+                const isSelf = (user.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase();
                 return (
                   <div key={user.docId || user.id} className={`p-3 rounded-xl border text-xs space-y-2 transition-all ${
                     isSelf ? 'bg-rose-50 border-rose-250' : 'bg-slate-50 border-slate-100'

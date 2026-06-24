@@ -15,6 +15,7 @@ interface DiagnosticWeakspotsProps {
   setFailedAnswersLogs: React.Dispatch<React.SetStateAction<WarningLog[]>>;
   setActiveTab: (tab: string) => void;
   currentUserEmail?: string;
+  userSuite?: string;
   key?: React.Key;
 }
 
@@ -22,10 +23,13 @@ export default function DiagnosticWeakspots({
   failedAnswersLogs,
   setFailedAnswersLogs,
   setActiveTab,
-  currentUserEmail
+  currentUserEmail,
+  userSuite = 'Free Student Tier'
 }: DiagnosticWeakspotsProps) {
 
-  const isFresh = currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
+  const isFresh = (currentUserEmail || '').trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
+  const isFree = userSuite === 'Free Student Tier';
+  const displayedLogs = isFree ? failedAnswersLogs.slice(0, 3) : failedAnswersLogs;
 
   // Subject proficiency values mapping
   const proficiencyData = [
@@ -103,10 +107,16 @@ export default function DiagnosticWeakspots({
         {/* Active Warning Logs (Col span 7) */}
         <div className="lg:col-span-7 space-y-4">
           <span className="block text-[10px] font-black uppercase text-slate-400 tracking-wider">
-            ACTIVE SYSTEM WARNING TRIGGER LOGS ({failedAnswersLogs.length})
+            ACTIVE SYSTEM WARNING TRIGGER LOGS ({isFree ? `${displayedLogs.length} of ${failedAnswersLogs.length} Capped` : failedAnswersLogs.length})
           </span>
 
-          {failedAnswersLogs.length === 0 ? (
+          {isFree && failedAnswersLogs.length > 0 && (
+            <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-[11px] font-semibold leading-relaxed">
+              🔒 <strong>Basic Checklist Limit:</strong> Under your Free Student Tier, diagnostic logs are capped at 3 items. Upgrade to Pro Suite, Clinical Suite or Lifetime Pass to unlock unlimited logs and the full Gaps Warning Logs tracker.
+            </div>
+          )}
+
+          {displayedLogs.length === 0 ? (
             <div className="p-8 text-center bg-white border border-dashed border-slate-200 rounded-[24px]">
               <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <CheckCircle className="w-6 h-6" />
@@ -118,7 +128,7 @@ export default function DiagnosticWeakspots({
             </div>
           ) : (
             <div className="space-y-3">
-              {failedAnswersLogs.map((log) => (
+              {displayedLogs.map((log) => (
                 <div key={log.id} className={`p-4 rounded-xl border flex justify-between items-start transition-all ${
                   log.alertLvl === 'High Danger' ? 'bg-red-50 border-red-200 text-red-950' : 'bg-amber-50 border-amber-200 text-amber-950'
                 }`}>

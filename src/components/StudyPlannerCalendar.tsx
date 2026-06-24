@@ -39,7 +39,7 @@ export default function StudyPlannerCalendar({
       if (emailKey !== 'studyfilesbyz@gmail.com') return [];
       return ['Active Recall Spacing', 'Physics Formulas Revision', 'Anki Loop Queue'];
     } catch {
-      return (currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com') ? [] : ['Active Recall Spacing', 'Physics Formulas Revision', 'Anki Loop Queue'];
+      return ((currentUserEmail || '').trim().toLowerCase() !== 'studyfilesbyz@gmail.com') ? [] : ['Active Recall Spacing', 'Physics Formulas Revision', 'Anki Loop Queue'];
     }
   });
 
@@ -66,7 +66,7 @@ export default function StudyPlannerCalendar({
         { id: '5', title: 'Pre-Med Admissions open UPCM', date: '2026-06-15', type: 'milestone' }
       ];
     } catch {
-      return (currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com') ? [] : [
+      return ((currentUserEmail || '').trim().toLowerCase() !== 'studyfilesbyz@gmail.com') ? [] : [
         { id: '1', title: 'CEM Registration Closes', date: '2026-06-30', type: 'milestone' },
         { id: '2', title: 'Part 1 Mock Simulator cohort', date: '2026-07-05', type: 'cohort' },
         { id: '3', title: 'National Exam Cycle Starts', date: '2026-11-15', type: 'exam' },

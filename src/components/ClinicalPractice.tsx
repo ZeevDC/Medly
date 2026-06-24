@@ -26,6 +26,8 @@ interface ClinicalPracticeProps {
   setSolvedDrills: (val: number) => void;
   failedAnswersLogs: WarningLog[];
   setFailedAnswersLogs: React.Dispatch<React.SetStateAction<WarningLog[]>>;
+  userSuite?: string;
+  onViewPremium?: () => void;
 }
 
 export default function ClinicalPractice({
@@ -33,6 +35,8 @@ export default function ClinicalPractice({
   setSolvedDrills,
   failedAnswersLogs,
   setFailedAnswersLogs,
+  userSuite = 'Free Student Tier',
+  onViewPremium,
 }: ClinicalPracticeProps) {
   const [selectedSubject, setSelectedSubject] = useState('All Subjects');
   const [timedSprint, setTimedSprint] = useState(true);
@@ -45,6 +49,39 @@ export default function ClinicalPractice({
   const [timeLeft, setTimeLeft] = useState(60);
   const [sprintScore, setSprintScore] = useState(0);
   const [consecutiveMisses, setConsecutiveMisses] = useState(0);
+
+  const isLocked = userSuite === 'Free Student Tier';
+
+  if (isLocked) {
+    return (
+      <div className="bg-white border border-slate-105 rounded-[24px] p-8 text-center max-w-md mx-auto my-12 space-y-5 shadow-xs animate-fade-in" id="clinical-drills-premium-barrier">
+        <div className="w-16 h-16 bg-indigo-50 text-[#1b4cb4] rounded-full flex items-center justify-center mx-auto border border-indigo-100">
+          <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <div className="space-y-2">
+          <span className="text-[10px] uppercase font-black tracking-widest text-[#1b4cb4] bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-150">
+            PRO SUITE EXCLUSIVE
+          </span>
+          <h3 className="text-lg font-extrabold text-slate-800">Clinical Practice Drills Locked</h3>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Randomized, adaptive, 60-second timed clinical practice drills with socratic rationale breakdowns are exclusive to <strong className="text-[#1b4cb4]">Pro Suite</strong>, <strong className="text-[#1b4cb4]">Clinical Suite</strong>, and <strong className="text-indigo-950">Lifetime Pass</strong> candidates.
+          </p>
+          <p className="text-[11px] text-slate-400 italic">
+            Your current level: <span className="text-rose-600 font-extrabold">{userSuite}</span>
+          </p>
+        </div>
+        <button
+          onClick={onViewPremium}
+          className="w-full py-3 bg-gradient-to-r from-rose-600 to-[#1b4cb4] text-white hover:opacity-90 transition-all font-black text-xs rounded-xl shadow-xs cursor-pointer uppercase tracking-wider"
+        >
+          View Comparative Blueprints & Upgrade
+        </button>
+      </div>
+    );
+  }
 
   const subjectsList = [
     'All Subjects',

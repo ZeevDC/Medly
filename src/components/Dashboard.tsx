@@ -126,14 +126,14 @@ export default function Dashboard({
     if (!currentUserEmail) return;
 
     // Resolve name of current user from the registry list
-    const selfUser = usersList.find(u => u.email?.trim().toLowerCase() === currentUserEmail.trim().toLowerCase());
+    const selfUser = usersList.find(u => (u.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase());
     const selfName = selfUser ? selfUser.name : "Juan Dela Cruz";
     const premed = "UP Manila (BS Biology)";
 
     const selfDoc = {
       id: "usr_self_" + currentUserEmail.replace(/[^a-zA-Z0-9]/g, "_"),
       name: selfName,
-      email: currentUserEmail.trim().toLowerCase(),
+      email: (currentUserEmail || '').trim().toLowerCase(),
       suite: userSuite || "Free Student Tier",
       premed: premed,
       score: parseFloat(calculatedPotentialNmat.toFixed(1)),
@@ -183,7 +183,7 @@ export default function Dashboard({
       } else {
         const rankings = snapshot.docs.map(doc => {
           const data = doc.data();
-          const isSelf = (data.email || '').trim().toLowerCase() === currentUserEmail.trim().toLowerCase();
+          const isSelf = (data.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase();
           return {
             id: doc.id,
             name: data.name || "Anonymous Pre-Med",
@@ -1200,104 +1200,10 @@ export default function Dashboard({
           </div>
         </div>
 
-        {/* Interactive NMAT Daily Challenge & Live Rankings Peer Leaderboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Daily Board Challenge Card (span 2) */}
-          <div className={`lg:col-span-2 ${themeCfg.cardBg} ${themeCfg.bubbleStyle} rounded-[24px] border ${themeCfg.borderClass} p-6 flex flex-col justify-between shadow-xs space-y-4`}>
-            <div>
-              <div className="flex justify-between items-center pb-2 border-b border-rose-100">
-                <div className="flex items-center space-x-2">
-                  <span className={`p-2 ${themeCfg.accentBg} ${themeCfg.accentText} rounded-xl`}>
-                    <Award className="w-5 h-5" />
-                  </span>
-                  <div>
-                    <h3 className={`font-extrabold ${themeCfg.textColor} text-sm sm:text-base`}>🎯 Daily NMAT Board Challenge</h3>
-                    <p className="text-[11px] text-slate-400">Fresh high-yield conceptual question delivered every 24 hours.</p>
-                  </div>
-                </div>
-                <span className={`text-[9px] uppercase font-black tracking-wider ${themeCfg.accentText} ${themeCfg.accentBg} px-2.5 py-0.5 rounded-full border ${themeCfg.borderClass}`}>
-                  Part 2: Biology / Genetics
-                </span>
-              </div>
+        {/* Live Rankings Peer Leaderboard */}
+        <div className="grid grid-cols-1 gap-6">
 
-              <div className="mt-4 p-4 bg-white/50 border border-slate-100 rounded-2xl">
-                <p className={`text-xs sm:text-sm font-bold ${themeCfg.textColor} leading-relaxed`}>
-                  In premium molecular diagnostics, a student identifies a chromosome sequence with a 3' to 5' lagging strand direction. During DNA replication, which of the following proteins plays the direct role of synthetic phosphodiester joining of Okazaki fragments?
-                </p>
-              </div>
-
-              {/* Choices list */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">
-                {[
-                  { key: 'A', text: 'A) DNA Ligase III / I' },
-                  { key: 'B', text: 'B) RNA Helicase Delta' },
-                  { key: 'C', text: 'C) Topoisomerase Alpha' },
-                  { key: 'D', text: 'D) Single-Strand primers' }
-                ].map(item => {
-                  const isSelected = dailyAns === item.key;
-                  return (
-                    <button
-                      key={item.key}
-                      disabled={dailyChecked}
-                      onClick={() => setDailyAns(item.key)}
-                      className={`p-3 rounded-xl border text-left text-xs font-black transition-all cursor-pointer ${
-                        isSelected 
-                          ? `${themeCfg.btnPrimary} text-white` 
-                          : `border-slate-200 bg-white hover:bg-slate-50 ${themeCfg.textColor}`
-                      } ${dailyChecked ? 'opacity-80' : ''}`}
-                    >
-                      {item.text}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Status and explanation banner */}
-              {dailyChecked && (
-                <div className={`mt-4 p-3.5 rounded-xl border text-[11px] leading-relaxed transition-all ${themeCfg.accentBg} ${themeCfg.accentBorder} ${themeCfg.textColor}`}>
-                  {dailyAns === 'A' ? (
-                    <div>
-                      <strong className="text-emerald-700 block mb-0.5">🎉 PERFECT MATCH! Socratic Rationale Matched:</strong>
-                      <span>DNA Ligases catalyze the formation of a phosphodiester bond between adjacent 3'-hydroxyl and 5'-phosphate termini of Okazaki fragments, cementing lagging strands.</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <strong className="text-rose-700 block mb-0.5">💥 COGNITIVE VARIANCE ENCOUNTERED:</strong>
-                      <span>Incorrect option chosen. DNA Ligase is the correct choice (A). Topoisomerases relieve supercoiling, helicases separate double strands, while ligases form phosphodiester backbones.</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t text-[10px]">
-              <span className="text-slate-400">94% of Manila premed candidates solved this correctly today.</span>
-              <div className="flex gap-2">
-                {dailyChecked ? (
-                  <button
-                    onClick={() => {
-                      setDailyChecked(false);
-                      setDailyAns(null);
-                    }}
-                    className={`px-3 py-1 ${themeCfg.btnSecondary} rounded-lg cursor-pointer`}
-                  >
-                    Reset Challenge
-                  </button>
-                ) : (
-                  <button
-                    disabled={!dailyAns}
-                    onClick={() => setDailyChecked(true)}
-                    className={`px-4 py-1 ${themeCfg.btnPrimary} text-white font-black rounded-lg cursor-pointer disabled:opacity-40`}
-                  >
-                    Lock Answer
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Live Rankings Leaderboard (span 1) */}
+          {/* Live Rankings Leaderboard */}
           <div className={`${themeCfg.cardBg} ${themeCfg.bubbleStyle} rounded-[24px] border ${themeCfg.borderClass} p-6 flex flex-col justify-between shadow-xs space-y-4`}>
             <div>
               <div className="flex items-center space-x-2 pb-2 border-b border-rose-100">

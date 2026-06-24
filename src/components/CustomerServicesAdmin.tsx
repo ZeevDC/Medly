@@ -34,7 +34,7 @@ export default function CustomerServicesAdmin({
   subscriptionSimMode,
   setSubscriptionSimMode,
 }: CustomerServicesAdminProps) {
-  const isAdmin = currentUserEmail.trim().toLowerCase() === 'studyfilesbyz@gmail.com';
+  const isAdmin = (currentUserEmail || '').trim().toLowerCase() === 'studyfilesbyz@gmail.com';
 
   const [activeSubTab, setActiveSubTab] = useState<'gcash-help' | 'preferences' | 'admin-panel'>('gcash-help');
 

@@ -61,6 +61,7 @@ export default function Navigation({
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: Gauge, desc: 'Central performance metrics, License status, Live rankings, Board challenge' },
     { id: 'achievements-metrics', label: 'Achievements & Metrics', icon: Award, desc: 'Simulated pass probability, study heatmap, subject radar, deficiency tracker, badges' },
+    { id: 'nmat-takes-tracker', label: 'NMAT Multi-Take Log', icon: Trophy, desc: 'Log and compare your 1st, 2nd, 3rd, 4th, etc. NMAT exam scores side-by-side' },
     { id: 'topics-tracker', label: 'Syllabus & Readiness Map', icon: BookOpen, desc: 'Checklists of subjects for Chemistry, Biology, Physics, & Social Sciences plus readiness map' },
     { id: 'ai-tutor-mode', label: 'AI Tutor Mode', icon: Sparkles, desc: 'Interactive socratic prep mentors' },
     { id: 'community-discussion', label: 'Community Hub', icon: MessageSquare, desc: 'Discuss study tips, admissions, & mnemonics with other pre-meds' },
@@ -77,7 +78,7 @@ export default function Navigation({
   ];
 
   // If user is from authorized email admin profile, attach the system administrator block
-  const isAdmin = currentUserEmail.trim().toLowerCase() === 'studyfilesbyz@gmail.com';
+  const isAdmin = (currentUserEmail || '').trim().toLowerCase() === 'studyfilesbyz@gmail.com';
   const displayTabs = isAdmin 
     ? [...tabs, { id: 'curriculum-admin', label: 'Curriculum Admin Hub', icon: Shield, desc: 'Manage users, approvals, tickets, and feedbacks' }] 
     : tabs;

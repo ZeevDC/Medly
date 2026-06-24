@@ -8,6 +8,8 @@ interface AchievementsMetricsProps {
   studyLogs?: Array<{ id: string; subject: string; hours: number; date: string }>;
   failedAnswersLogs?: any[];
   currentUserEmail?: string;
+  userSuite?: string;
+  onViewPremium?: () => void;
   key?: React.Key;
 }
 
@@ -17,10 +19,13 @@ export default function AchievementsMetrics({
   undergradGwa,
   studyLogs = [],
   failedAnswersLogs = [],
-  currentUserEmail
+  currentUserEmail,
+  userSuite = 'Free Student Tier',
+  onViewPremium
 }: AchievementsMetricsProps) {
   
-  const isFresh = currentUserEmail?.trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
+  const isFresh = (currentUserEmail || '').trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
+  const isBasicTracker = userSuite === 'Free Student Tier' || userSuite === 'Pro Suite (₱79)';
 
   // Calculate simulated pass probability based on GWA and solved drills
   const baseGwa = parseFloat(undergradGwa) || (isFresh ? 3.00 : 1.45);
@@ -33,7 +38,7 @@ export default function AchievementsMetrics({
   const getProbabilityTier = () => {
     if (calculatedProbability === 0) return { label: '⚖️ Standard Baseline (Pending diagnostic inputs)', color: 'text-slate-700 bg-slate-50 border-slate-200' };
     if (calculatedProbability >= 90) return { label: '🌟 Elite Target (UPCM / PLM Qualified)', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
-    if (calculatedProbability >= 75) return { label: '🛡️ Competitive (UST / ASMPH Target Stable)', color: 'text-sky-700 bg-sky-50 border-sky-200' };
+    if (calculatedProbability >= 75) return { label: '🛡️ Competitive', color: 'text-sky-700 bg-sky-50 border-sky-200' };
     return { label: '⚠️ Borderline Passing Centile Index', color: 'text-amber-700 bg-amber-50 border-amber-200' };
   };
 
@@ -288,9 +293,16 @@ export default function AchievementsMetrics({
               <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 bg-slate-50 border border-slate-150 px-2 py-0.5 rounded">
                 SPACING RETRIEVAL COMPLIANCE
               </span>
-              <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-150 px-2.5 py-0.5 rounded-full">
-                📅 June 2026 Grid
-              </span>
+              <div className="flex gap-1.5 items-center">
+                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border ${
+                  isBasicTracker ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                }`}>
+                  {isBasicTracker ? '🔒 Basic Tracker Mode' : '📊 Full Heatmap Analytics'}
+                </span>
+                <span className="text-[10px] font-black text-indigo-700 bg-indigo-50 border border-indigo-150 px-2.5 py-0.5 rounded-full">
+                  📅 June 2026 Grid
+                </span>
+              </div>
             </div>
             <h3 className="font-extrabold text-base text-slate-800">Monthly Study Heatmap</h3>
             <p className="text-xs text-slate-500 font-medium">
@@ -298,7 +310,28 @@ export default function AchievementsMetrics({
             </p>
           </div>
 
-          <div className="grid grid-cols-7 gap-2.5 pt-2">
+          <div className="grid grid-cols-7 gap-2.5 pt-2 relative">
+            {isBasicTracker && (
+              <div className="absolute inset-0 bg-white/70 backdrop-blur-[1.5px] z-10 flex flex-col justify-center items-center text-center p-3 rounded-2xl">
+                <span className="text-[9px] uppercase font-black tracking-widest text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 mb-1 animate-pulse">
+                  Clinical Suite Exclusive
+                </span>
+                <p className="text-xs font-extrabold text-slate-800 max-w-[200px] leading-tight">
+                  Heatmap Density Analysis Locked
+                </p>
+                <p className="text-[9.5px] text-slate-450 leading-snug mt-0.5 max-w-[190px] font-bold">
+                  Upgrading to Clinical Suite or Lifetime Pass unlocks the complete interactive grid analytics.
+                </p>
+                {onViewPremium && (
+                  <button
+                    onClick={onViewPremium}
+                    className="mt-2 px-3 py-1 bg-[#1b4cb4] hover:bg-slate-850 text-white font-black text-[9px] rounded-lg transition-all uppercase tracking-wider cursor-pointer"
+                  >
+                    Unlock full analytics
+                  </button>
+                )}
+              </div>
+            )}
             {June2026Days.map((d) => (
               <div
                 key={d.dayNum}

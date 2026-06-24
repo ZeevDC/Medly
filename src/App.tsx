@@ -23,6 +23,7 @@ import FeedbackPage from './components/FeedbackPage';
 import CurriculumAdmin from './components/CurriculumAdmin';
 import CommunityDiscussionBoard from './components/CommunityDiscussionBoard';
 import ResourcesPage from './components/ResourcesPage';
+import NmatTakesTracker from './components/NmatTakesTracker';
 
 // User Authentication Page & Firebase integration
 import AuthPage from './components/AuthPage';
@@ -150,6 +151,35 @@ export default function App() {
     localStorage.setItem('medly_is_authenticated', 'true');
     localStorage.setItem('medly_student_email', email);
     localStorage.setItem('medly_student_name', displayName || 'Juan Dela Cruz');
+
+    const emailKey = email.trim().toLowerCase();
+    const isSpecialAdmin = emailKey === 'studyfilesbyz@gmail.com';
+    const targetSuite = isSpecialAdmin ? 'Lifetime Pass (₱249)' : 'Free Student Tier';
+
+    setSubscriptionSimMode(targetSuite);
+    localStorage.setItem('medly_subscription_mode', targetSuite);
+
+    // Force initialization of fresh users from scratch!
+    if (!isSpecialAdmin) {
+      localStorage.setItem(`medly_streak_${emailKey}`, '0');
+      localStorage.setItem(`medly_nmat_goal_${emailKey}`, '0');
+      localStorage.setItem(`medly_undergrad_gwa_${emailKey}`, '3.00');
+      localStorage.setItem(`medly_solved_drills_${emailKey}`, '0');
+      localStorage.setItem(`medly_accuracy_index_${emailKey}`, '0.0%');
+      localStorage.setItem(`medly_habit_tracker_${emailKey}`, JSON.stringify({
+        'Active Recall Spacing': false,
+        'Physics Formulas Revision': false,
+        'Anki Loop Queue': false
+      }));
+      localStorage.setItem(`medly_study_logs_${emailKey}`, JSON.stringify([]));
+      localStorage.setItem(`medly_mood_logs_${emailKey}`, JSON.stringify([]));
+      localStorage.setItem(`medly_failed_answers_logs_${emailKey}`, JSON.stringify([]));
+    } else {
+      localStorage.setItem(`medly_nmat_goal_${emailKey}`, '95');
+      localStorage.setItem(`medly_undergrad_gwa_${emailKey}`, '1.45');
+      localStorage.setItem(`medly_accuracy_index_${emailKey}`, '86.4%');
+    }
+
     setStudentEmail(email);
     setCurrentUserEmail(email);
     setStudentName(displayName || 'Juan Dela Cruz');
@@ -718,6 +748,16 @@ export default function App() {
             undergradGwa={undergradGwa}
             studyLogs={studyLogs}
             failedAnswersLogs={failedAnswersLogs}
+            userSuite={subscriptionSimMode}
+            onViewPremium={() => setActiveTab('premium-page')}
+          />
+        )}
+
+        {activeTab === 'nmat-takes-tracker' && (
+          <NmatTakesTracker
+            onHighPrUpdated={(highestPr) => {
+              setNmatGoal(highestPr);
+            }}
           />
         )}
 
@@ -739,7 +779,10 @@ export default function App() {
         )}
 
         {activeTab === 'spaced-repetition-coach' && (
-          <SpacedRepetitionCoach />
+          <SpacedRepetitionCoach
+            userSuite={subscriptionSimMode}
+            onViewPremium={() => setActiveTab('premium-page')}
+          />
         )}
 
         {activeTab === 'clinical-practice' && (
@@ -748,12 +791,17 @@ export default function App() {
             setSolvedDrills={setSolvedDrills}
             failedAnswersLogs={failedAnswersLogs}
             setFailedAnswersLogs={setFailedAnswersLogs}
+            userSuite={subscriptionSimMode}
+            onViewPremium={() => setActiveTab('premium-page')}
           />
         )}
 
         {/* Real-time full Simulated Mock Exams Suite */}
         {activeTab === 'simulated-exam' && (
-          <SimulatedExam />
+          <SimulatedExam
+            userSuite={subscriptionSimMode}
+            onViewPremium={() => setActiveTab('premium-page')}
+          />
         )}
 
         {activeTab === 'diagnostic-weakspots' && (
@@ -763,6 +811,7 @@ export default function App() {
             failedAnswersLogs={failedAnswersLogs}
             setFailedAnswersLogs={setFailedAnswersLogs}
             setActiveTab={setActiveTab}
+            userSuite={subscriptionSimMode}
           />
         )}
 
