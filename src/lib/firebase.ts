@@ -34,6 +34,7 @@ try {
 if (!auth) {
   auth = {
     currentUser: null,
+    _isMock: true,
     onAuthStateChanged: (callback: any) => {
       // Return a dummy unsubscribe function
       return () => {};

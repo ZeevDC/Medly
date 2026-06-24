@@ -22,11 +22,8 @@ export default function NmatTakesTracker({ onHighPrUpdated }: NmatTakesTrackerPr
     } catch (e) {
       console.warn("Failed to load custom takes from localstorage:", e);
     }
-    // Default preset Takes to show instant value!
-    return [
-      { id: 'take-1', takeName: '1st Take (Practice)', date: '2025-01-15', part1Score: 580, part2Score: 540, overallPr: 75 },
-      { id: 'take-2', takeName: '2nd Take (Official)', date: '2025-05-20', part1Score: 660, part2Score: 620, overallPr: 92 }
-    ];
+    // Default empty array so no pre-built scores show
+    return [];
   });
 
   const [newTakeName, setNewTakeName] = useState('');
@@ -72,15 +69,6 @@ export default function NmatTakesTracker({ onHighPrUpdated }: NmatTakesTrackerPr
   const handleDeleteTake = (id: string) => {
     setTakes(prev => prev.filter(t => t.id !== id));
   };
-
-  // Med School Benchmarking data
-  const schoolBenchmarks = [
-    { name: 'UP College of Medicine (UPCM)', required: 99, abbreviation: 'UPCM' },
-    { name: 'Ateneo School of Medicine and Public Health', required: 90, abbreviation: 'ASMPH' },
-    { name: 'Pamantasan ng Lungsod ng Maynila (PLM)', required: 90, abbreviation: 'PLM' },
-    { name: 'St. Luke\'s College of Medicine', required: 85, abbreviation: 'SLMC' },
-    { name: 'UST Faculty of Medicine and Surgery', required: 85, abbreviation: 'UST-FMS' }
-  ];
 
   // Calculations
   const highestPr = takes.length > 0 ? Math.max(...takes.map(t => t.overallPr)) : 0;
@@ -263,41 +251,6 @@ export default function NmatTakesTracker({ onHighPrUpdated }: NmatTakesTrackerPr
               </table>
             </div>
           )}
-        </div>
-
-        {/* Philippine Med School Eligibility Forecast Matrix */}
-        <div className="border-t border-slate-100 pt-4">
-          <h3 className="font-extrabold text-slate-800 text-xs mb-2.5 flex items-center gap-1.5">
-            <CheckCircle className="w-4 h-4 text-emerald-500" />
-            <span>Target School Compatibility Assessment</span>
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
-            {schoolBenchmarks.map((school) => {
-              const eligible = highestPr >= school.required;
-              return (
-                <div 
-                  key={school.abbreviation} 
-                  className={`p-2.5 rounded-xl border flex justify-between items-center ${
-                    eligible
-                      ? 'bg-emerald-50/40 border-emerald-100/70 text-emerald-900'
-                      : 'bg-slate-50/50 border-slate-100 text-slate-500'
-                  }`}
-                >
-                  <div>
-                    <span className="font-bold text-slate-800">{school.name}</span>
-                    <span className="block text-[9px] text-slate-400 font-medium leading-none mt-0.5">Competency cut-off filter: {school.required}+ PR</span>
-                  </div>
-                  
-                  {eligible ? (
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-150 text-emerald-800 font-bold uppercase text-[9px]">Eligible ✓</span>
-                  ) : (
-                    <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 font-bold uppercase text-[9px]">PR Needs {school.required}</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
         </div>
       </div>
     </div>

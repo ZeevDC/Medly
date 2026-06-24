@@ -353,20 +353,37 @@ export default function App() {
 
   // Sync with actual active Firebase session on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsAuthenticated(true);
-        try {
-          localStorage.setItem('medly_is_authenticated', 'true');
-        } catch {}
-        setStudentEmail(user.email || '');
-        setCurrentUserEmail(user.email || '');
-        if (user.displayName) {
-          setStudentName(user.displayName);
+    let unsubscribe = () => {};
+    try {
+      if (auth && (auth as any)._isMock) {
+        if (typeof auth.onAuthStateChanged === 'function') {
+          unsubscribe = auth.onAuthStateChanged((user: any) => {
+            // Dummy auth callback
+          });
         }
+      } else {
+        unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            setIsAuthenticated(true);
+            try {
+              localStorage.setItem('medly_is_authenticated', 'true');
+            } catch {}
+            setStudentEmail(user.email || '');
+            setCurrentUserEmail(user.email || '');
+            if (user.displayName) {
+              setStudentName(user.displayName);
+            }
+          }
+        });
       }
-    });
-    return () => unsubscribe();
+    } catch (e) {
+      console.warn("onAuthStateChanged subscription failed:", e);
+    }
+    return () => {
+      try {
+        unsubscribe();
+      } catch {}
+    };
   }, []);
 
   // Persist live users registry changes to storage
