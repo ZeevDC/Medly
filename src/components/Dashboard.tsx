@@ -175,6 +175,7 @@ export default function Dashboard({
                 id: doc.id,
                 name: data.name || "Anonymous Pre-Med",
                 premed: data.premed || "Pre-Med Student",
+                suite: data.suite || "Free Student Tier",
                 score: typeof data.score === "number" ? data.score : 85.0,
                 tag: isSelf ? 'YOU' : data.suite?.includes('Pro') ? 'PRO' : data.suite?.includes('Clinical') ? 'CLINICAL' : data.suite?.includes('Lifetime') ? 'VIP' : undefined,
                 email: data.email || ""
@@ -1223,7 +1224,7 @@ export default function Dashboard({
                               {user.name}
                               {user.tag && <span className={`text-[8px] ${themeCfg.accentBg} ${themeCfg.accentText} px-1 rounded font-black uppercase`}>{user.tag}</span>}
                             </p>
-                            <p className="text-[9.5px] text-slate-450">{user.premed}</p>
+                            <p className="text-[9.5px] text-slate-450 font-medium">{(user.suite || "Free Student Tier").replace(/\s*\(₱\d+\)/g, "").replace(/\s*\(P\d+\)/g, "")}</p>
                           </div>
                         </div>
                         <span className={`font-mono text-[11px] font-black ${themeCfg.textColor}`}>

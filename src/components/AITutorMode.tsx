@@ -23,6 +23,36 @@ interface AITutorModeProps {
   onClearFocusedTopic?: () => void;
 }
 
+function getClientSocraticFallback(message: string, focusedTopic?: AITutorModeProps['focusedTopic']): string {
+  const msg = message.toLowerCase().trim();
+  
+  if (msg.includes('neurotransmitter') || msg.includes('synapse') || msg.includes('brain') || msg.includes('nerve') || msg.includes('neuron')) {
+    return 'Neurotransmitters are the fascinating chemical messengers of our nervous system! Before we define them, imagine a signal traveling down a neuron. When it reaches the very end of the axon, how does it physically cross that microscopic gap (the synapse) to tell the next cell what to do? What role do you think vesicles and receptors play in this beautiful relay?';
+  }
+  
+  if (msg.includes('mitochondria') || msg.includes('cell') || msg.includes('organelle') || msg.includes('adenosine') || msg.includes('atp')) {
+    return 'Cellular biology is incredibly elegant! You mentioned a key component of cell energy. What famous cycle occurs within the inner membrane of the mitochondria to produce ATP? Why do you think active transport processes in our kidneys or neurons require so much of this specific molecule?';
+  }
+
+  if (msg.includes('gwa') || msg.includes('score') || msg.includes('percentile') || msg.includes('pr') || msg.includes('target') || msg.includes('school')) {
+    return 'Mapping your medical school trajectory can be intense but deeply rewarding! When you look at your target NMAT percentile rank and undergraduate GWA, what do you feel is your strongest asset right now? How can we leverage your daily habits to bridge any gaps for your dream institution?';
+  }
+
+  if (msg.includes('physics') || msg.includes('force') || msg.includes('acceleration') || msg.includes('kinematic') || msg.includes('velocity') || msg.includes('gravity')) {
+    return 'Physics on the NMAT is all about understanding the fundamental laws of nature! If we are observing an object in motion, what primary factors determine how its velocity changes over time? What kinematic formula from your study guides do you think connects displacement, initial velocity, and constant acceleration?';
+  }
+
+  if (msg.includes('chemistry') || msg.includes('acid') || msg.includes('base') || msg.includes('ph') || msg.includes('mole') || msg.includes('stoich')) {
+    return 'Chemical relationships are beautifully precise! When we talk about pH and buffers, what actually happens to the concentration of hydronium ions when an acid is introduced? Why is maintaining a narrow pH range so critical in human blood plasma?';
+  }
+
+  if (focusedTopic) {
+    return `That is an excellent inquiry regarding "${focusedTopic.topic}"! Since this is a key concept in ${focusedTopic.subject}, let's trace it back to first principles. What do you recall as the main mechanism or rule that governs ${focusedTopic.topic}? How does it relate to the description: "${focusedTopic.description}"?`;
+  }
+
+  return 'That is a wonderful pre-med concept to dive into! Socratic guidance is all about unlocking the knowledge already inside you. Before we look up the textbook definition, what are your initial thoughts or clues? What basic biological or chemical rules do you think apply here?';
+}
+
 export default function AITutorMode({ isOffline, focusedTopic, onClearFocusedTopic }: AITutorModeProps) {
   const [activeTutor, setActiveTutor] = useState('Socrates-Med 🎓');
   const [chatIn, setChatIn] = useState('');
@@ -139,6 +169,10 @@ How can I guide you to master this concept? Below are quick study actions we can
         },
         body: JSON.stringify({
           message: userMsg.content,
+          history: activeHistory.map(h => ({
+            role: h.senderRole === 'student' ? 'user' : 'model',
+            content: h.content
+          })),
           context: { 
             tutor: activeTutor,
             focusedTopic: focusedTopic ? {
@@ -153,13 +187,20 @@ How can I guide you to master this concept? Below are quick study actions we can
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+
       const data = await response.json();
+      if (!data || !data.reply) {
+        throw new Error("No valid socratic reply in response data");
+      }
       
       const botReplyMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: activeTutor.split(' ')[0],
         senderRole: 'bot',
-        content: data.reply || 'Keep exploring this concept! Tell me, what is the primary formula that binds these variables together?',
+        content: data.reply,
         timestamp: new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
         avatarColor: curators.find(c => c.name === activeTutor)?.av === '🦉' ? 'bg-indigo-650' : curators.find(c => c.name === activeTutor)?.av === '🔬' ? 'bg-[#059669]' : 'bg-purple-650'
       };
@@ -170,7 +211,22 @@ How can I guide you to master this concept? Below are quick study actions we can
       }));
 
     } catch (err) {
-      console.warn("AI Tutor fetch failed:", err);
+      console.warn("AI Tutor fetch failed, using socratic client-side fallback:", err);
+      
+      const fallbackReply = getClientSocraticFallback(finalContent, focusedTopic);
+      const botReplyMsg: ChatMessage = {
+        id: `bot-fallback-${Date.now()}`,
+        sender: activeTutor.split(' ')[0],
+        senderRole: 'bot',
+        content: fallbackReply,
+        timestamp: new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+        avatarColor: curators.find(c => c.name === activeTutor)?.av === '🦉' ? 'bg-indigo-650' : curators.find(c => c.name === activeTutor)?.av === '🔬' ? 'bg-[#059669]' : 'bg-purple-650'
+      };
+
+      setTutorSessions(prev => ({
+        ...prev,
+        [activeTutor]: [...(prev[activeTutor] || []), botReplyMsg]
+      }));
     } finally {
       setIsChatLoading(false);
     }
