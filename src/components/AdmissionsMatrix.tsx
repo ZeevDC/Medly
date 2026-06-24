@@ -56,7 +56,9 @@ export default function AdmissionsMatrix({
   });
 
   useEffect(() => {
-    localStorage.setItem('medly_doc_checklist', JSON.stringify(documentChecklist));
+    try {
+      localStorage.setItem('medly_doc_checklist', JSON.stringify(documentChecklist));
+    } catch {}
   }, [documentChecklist]);
 
   const toggleCheck = (id: string) => {

@@ -155,62 +155,47 @@ export default function Dashboard({
 
   // Listen to live rankings collection in real-time
   useEffect(() => {
-    const q = query(
-      collection(db, "live_users"),
-      orderBy("score", "desc"),
-      limit(20)
-    );
+    try {
+      const q = query(
+        collection(db, "live_users"),
+        orderBy("score", "desc"),
+        limit(20)
+      );
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      if (snapshot.empty) {
-        // If empty, seed live competitor data inside Firestore
-        const defaultCompetitors = [
-          { id: "usr_comp_1", name: "Ramon Lopez", email: "ramon.lopez@example.com", suite: "Pro Suite (₱79)", premed: "UP Diliman (BS Biochemistry)", score: 97.5, solvedDrills: 45, lastUpdated: Date.now() },
-          { id: "usr_comp_2", name: "Alyssa Ramirez", email: "alyssa.ramirez@example.com", suite: "Clinical Suite (₱149)", premed: "UST (BS Pharmacy)", score: 94.2, solvedDrills: 38, lastUpdated: Date.now() },
-          { id: "usr_comp_3", name: "Patricia Cruz", email: "patricia.cruz@example.com", suite: "Free Student Tier", premed: "DLSU (BS Human Biology)", score: 91.8, solvedDrills: 26, lastUpdated: Date.now() },
-          { id: "usr_comp_4", name: "Lorenzo Santos", email: "lorenzo.santos@example.com", suite: "Lifetime Pass (₱249)", premed: "Ateneo (BS Psychology)", score: 89.4, solvedDrills: 19, lastUpdated: Date.now() },
-          { id: "usr_comp_5", name: "Ma. Elena Castro", email: "elena.castro@example.com", suite: "Pro Suite (₱79)", premed: "PLM (BS Physical Therapy)", score: 86.5, solvedDrills: 15, lastUpdated: Date.now() }
-        ];
-
-        for (const competitor of defaultCompetitors) {
-          try {
-            await setDoc(doc(db, "live_users", competitor.id), competitor);
-          } catch (e) {
-            console.error("Error seeding competitor:", e);
-            handleFirestoreError(e, OperationType.WRITE, `live_users/${competitor.id}`);
-          }
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          setFirebaseRankings([]);
+          setFirebaseLoading(false);
+        } else {
+          const rankings = snapshot.docs
+            .map(doc => {
+              const data = doc.data();
+              const isSelf = (data.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase();
+              return {
+                id: doc.id,
+                name: data.name || "Anonymous Pre-Med",
+                premed: data.premed || "Pre-Med Student",
+                score: typeof data.score === "number" ? data.score : 85.0,
+                tag: isSelf ? 'YOU' : data.suite?.includes('Pro') ? 'PRO' : data.suite?.includes('Clinical') ? 'CLINICAL' : data.suite?.includes('Lifetime') ? 'VIP' : undefined,
+                email: data.email || ""
+              };
+            })
+            .filter(user => !user.id.startsWith("usr_comp_") && !(user.email || '').trim().toLowerCase().endsWith("@example.com"));
+          setFirebaseRankings(rankings);
+          setFirebaseLoading(false);
         }
-      } else {
-        const rankings = snapshot.docs.map(doc => {
-          const data = doc.data();
-          const isSelf = (data.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase();
-          return {
-            id: doc.id,
-            name: data.name || "Anonymous Pre-Med",
-            premed: data.premed || "Pre-Med Student",
-            score: typeof data.score === "number" ? data.score : 85.0,
-            tag: isSelf ? 'YOU' : data.suite?.includes('Pro') ? 'PRO' : data.suite?.includes('Clinical') ? 'CLINICAL' : data.suite?.includes('Lifetime') ? 'VIP' : undefined,
-            email: data.email || ""
-          };
-        });
-        setFirebaseRankings(rankings);
+      }, (error) => {
+        console.warn("Firebase rankings snapshot error:", error);
+        setFirebaseRankings([]);
         setFirebaseLoading(false);
-      }
-    }, (error) => {
-      console.warn("Firebase rankings snapshot error (using local fallbacks):", error);
-      const fallbackCompetitors = [
-        { id: "usr_comp_1", name: "Ramon Lopez", premed: "UP Diliman (BS Biochemistry)", score: 97.5, tag: 'PRO' },
-        { id: "usr_comp_2", name: "Alyssa Ramirez", premed: "UST (BS Pharmacy)", score: 94.2, tag: 'CLINICAL' },
-        { id: "usr_comp_3", name: "Patricia Cruz", premed: "DLSU (BS Human Biology)", score: 91.8 },
-        { id: "usr_comp_4", name: "Lorenzo Santos", premed: "Ateneo (BS Psychology)", score: 89.4, tag: 'VIP' },
-        { id: "usr_comp_5", name: "Ma. Elena Castro", premed: "PLM (BS Physical Therapy)", score: 86.5, tag: 'PRO' }
-      ];
-      setFirebaseRankings(fallbackCompetitors);
-      setFirebaseLoading(false);
-      handleFirestoreError(error, OperationType.GET, "live_users");
-    });
+        handleFirestoreError(error, OperationType.GET, "live_users");
+      });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn("Firebase rankings subscription failed on load:", e);
+      setFirebaseLoading(false);
+    }
   }, [currentUserEmail]);
 
   // Calculate total concepts due today

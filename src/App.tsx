@@ -28,7 +28,8 @@ import NmatTakesTracker from './components/NmatTakesTracker';
 // User Authentication Page & Firebase integration
 import AuthPage from './components/AuthPage';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from './lib/firebase';
+import { auth, db } from './lib/firebase';
+import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 
 import { MedSchool, SrsConcept } from './types';
 import { Compass, BookOpen, School, Calculator, ClipboardList, Send, Sparkles } from 'lucide-react';
@@ -148,36 +149,44 @@ export default function App() {
 
   const handleAuthSuccess = (email: string, displayName: string) => {
     setIsAuthenticated(true);
-    localStorage.setItem('medly_is_authenticated', 'true');
-    localStorage.setItem('medly_student_email', email);
-    localStorage.setItem('medly_student_name', displayName || 'Juan Dela Cruz');
+    try {
+      localStorage.setItem('medly_is_authenticated', 'true');
+      localStorage.setItem('medly_student_email', email);
+      localStorage.setItem('medly_student_name', displayName || 'Juan Dela Cruz');
+    } catch {}
 
     const emailKey = email.trim().toLowerCase();
     const isSpecialAdmin = emailKey === 'studyfilesbyz@gmail.com';
     const targetSuite = isSpecialAdmin ? 'Lifetime Pass (₱249)' : 'Free Student Tier';
 
     setSubscriptionSimMode(targetSuite);
-    localStorage.setItem('medly_subscription_mode', targetSuite);
+    try {
+      localStorage.setItem('medly_subscription_mode', targetSuite);
+    } catch {}
 
     // Force initialization of fresh users from scratch!
     if (!isSpecialAdmin) {
-      localStorage.setItem(`medly_streak_${emailKey}`, '0');
-      localStorage.setItem(`medly_nmat_goal_${emailKey}`, '0');
-      localStorage.setItem(`medly_undergrad_gwa_${emailKey}`, '3.00');
-      localStorage.setItem(`medly_solved_drills_${emailKey}`, '0');
-      localStorage.setItem(`medly_accuracy_index_${emailKey}`, '0.0%');
-      localStorage.setItem(`medly_habit_tracker_${emailKey}`, JSON.stringify({
-        'Active Recall Spacing': false,
-        'Physics Formulas Revision': false,
-        'Anki Loop Queue': false
-      }));
-      localStorage.setItem(`medly_study_logs_${emailKey}`, JSON.stringify([]));
-      localStorage.setItem(`medly_mood_logs_${emailKey}`, JSON.stringify([]));
-      localStorage.setItem(`medly_failed_answers_logs_${emailKey}`, JSON.stringify([]));
+      try {
+        localStorage.setItem(`medly_streak_${emailKey}`, '0');
+        localStorage.setItem(`medly_nmat_goal_${emailKey}`, '0');
+        localStorage.setItem(`medly_undergrad_gwa_${emailKey}`, '3.00');
+        localStorage.setItem(`medly_solved_drills_${emailKey}`, '0');
+        localStorage.setItem(`medly_accuracy_index_${emailKey}`, '0.0%');
+        localStorage.setItem(`medly_habit_tracker_${emailKey}`, JSON.stringify({
+          'Active Recall Spacing': false,
+          'Physics Formulas Revision': false,
+          'Anki Loop Queue': false
+        }));
+        localStorage.setItem(`medly_study_logs_${emailKey}`, JSON.stringify([]));
+        localStorage.setItem(`medly_mood_logs_${emailKey}`, JSON.stringify([]));
+        localStorage.setItem(`medly_failed_answers_logs_${emailKey}`, JSON.stringify([]));
+      } catch {}
     } else {
-      localStorage.setItem(`medly_nmat_goal_${emailKey}`, '95');
-      localStorage.setItem(`medly_undergrad_gwa_${emailKey}`, '1.45');
-      localStorage.setItem(`medly_accuracy_index_${emailKey}`, '86.4%');
+      try {
+        localStorage.setItem(`medly_nmat_goal_${emailKey}`, '95');
+        localStorage.setItem(`medly_undergrad_gwa_${emailKey}`, '1.45');
+        localStorage.setItem(`medly_accuracy_index_${emailKey}`, '86.4%');
+      } catch {}
     }
 
     setStudentEmail(email);
@@ -192,9 +201,11 @@ export default function App() {
       console.warn("Firebase Auth sign out pending config:", e);
     }
     setIsAuthenticated(false);
-    localStorage.removeItem('medly_is_authenticated');
-    localStorage.removeItem('medly_student_email');
-    localStorage.removeItem('medly_student_name');
+    try {
+      localStorage.removeItem('medly_is_authenticated');
+      localStorage.removeItem('medly_student_email');
+      localStorage.removeItem('medly_student_name');
+    } catch {}
     setStudentEmail('studyfilesbyz@gmail.com');
     setCurrentUserEmail('studyfilesbyz@gmail.com');
     setStudentName('Juan Dela Cruz');
@@ -278,26 +289,76 @@ export default function App() {
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
 
   // Live registry of pre-med student accounts
-  const [usersList, setUsersList] = useState<any[]>(() => {
+  const [usersList, setUsersList] = useState<any[]>([]);
+
+  // Subscribe to real-time live_users list from Firestore (excluding pre-built users)
+  useEffect(() => {
     try {
-      const stored = localStorage.getItem('medly_users_list');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return [
-      { id: 'usr-1', name: 'Juan Dela Cruz', email: 'studyfilesbyz@gmail.com', suite: 'Free Student Tier' },
-      { id: 'usr-2', name: 'Juan Dela Cruz', email: 'juan_dela_cruz@gmail.com', suite: 'Pro Suite (₱79)' },
-      { id: 'usr-3', name: 'Hazel Santos', email: 'hazel_santos@gmail.com', suite: 'Clinical Suite (₱149)' },
-      { id: 'usr-4', name: 'Jerome Mercado', email: 'jerome_mercado@gmail.com', suite: 'Lifetime Pass (₱249)' },
-      { id: 'usr-5', name: 'Christine Alcantara', email: 'christine_alcantara@gmail.com', suite: 'Free Student Tier' }
-    ];
-  });
+      const q = collection(db, "live_users");
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const list: any[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const docId = doc.id;
+          // Filter out pre-built / mock / competitor users
+          if (docId.startsWith("usr_comp_") || (data.email || '').trim().toLowerCase().endsWith("@example.com")) {
+            return;
+          }
+          list.push({
+            id: docId,
+            docId: docId,
+            name: data.name || "Anonymous Pre-Med",
+            email: data.email || "",
+            suite: data.suite || "Free Student Tier",
+            premed: data.premed || "Pre-Med Student",
+            score: typeof data.score === "number" ? data.score : 85.0,
+            solvedDrills: typeof data.solvedDrills === "number" ? data.solvedDrills : 0,
+            lastUpdated: data.lastUpdated || Date.now()
+          });
+        });
+        setUsersList(list);
+      }, (error) => {
+        console.warn("Error subscribing to live_users in App.tsx:", error);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn("Firestore collection subscribe error:", e);
+    }
+  }, []);
+
+  // Sync the current user's profile to Firestore "live_users" collection on profile/suite updates
+  useEffect(() => {
+    if (!studentEmail || studentEmail.trim() === '') return;
+    const emailClean = studentEmail.trim().toLowerCase();
+    const docId = "usr_self_" + emailClean.replace(/[^a-zA-Z0-9]/g, "_");
+
+    const timer = setTimeout(async () => {
+      try {
+        const userRef = doc(db, "live_users", docId);
+        await setDoc(userRef, {
+          id: docId,
+          name: studentName,
+          email: emailClean,
+          suite: subscriptionSimMode || "Free Student Tier",
+          premed: "UP Manila (BS Biology)", // default premed
+          lastUpdated: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.warn("App-level user profile sync pending:", err);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [studentEmail, studentName, subscriptionSimMode]);
 
   // Sync with actual active Firebase session on mount
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setIsAuthenticated(true);
-        localStorage.setItem('medly_is_authenticated', 'true');
+        try {
+          localStorage.setItem('medly_is_authenticated', 'true');
+        } catch {}
         setStudentEmail(user.email || '');
         setCurrentUserEmail(user.email || '');
         if (user.displayName) {
@@ -336,40 +397,49 @@ export default function App() {
         const emailKey = studentEmail.trim().toLowerCase();
         const isFreshUser = emailKey !== 'studyfilesbyz@gmail.com';
 
-        const storedStreak = localStorage.getItem(`medly_streak_${emailKey}`);
+        let storedStreak: string | null = null;
+        let storedGoal: string | null = null;
+        let storedGwa: string | null = null;
+        let storedDrills: string | null = null;
+        let storedAccuracy: string | null = null;
+        let storedHabits: string | null = null;
+        let storedStudyLogs: string | null = null;
+        let storedMoodLogs: string | null = null;
+        let storedFailLogs: string | null = null;
+
+        try {
+          storedStreak = localStorage.getItem(`medly_streak_${emailKey}`);
+          storedGoal = localStorage.getItem(`medly_nmat_goal_${emailKey}`);
+          storedGwa = localStorage.getItem(`medly_undergrad_gwa_${emailKey}`);
+          storedDrills = localStorage.getItem(`medly_solved_drills_${emailKey}`);
+          storedAccuracy = localStorage.getItem(`medly_accuracy_index_${emailKey}`);
+          storedHabits = localStorage.getItem(`medly_habit_tracker_${emailKey}`);
+          storedStudyLogs = localStorage.getItem(`medly_study_logs_${emailKey}`);
+          storedMoodLogs = localStorage.getItem(`medly_mood_logs_${emailKey}`);
+          storedFailLogs = localStorage.getItem(`medly_failed_answers_logs_${emailKey}`);
+        } catch {}
+
         setStreak(storedStreak ? parseInt(storedStreak) : 0);
-
-        const storedGoal = localStorage.getItem(`medly_nmat_goal_${emailKey}`);
         setNmatGoal(storedGoal ? parseInt(storedGoal) : (isFreshUser ? 0 : 95));
-
-        const storedGwa = localStorage.getItem(`medly_undergrad_gwa_${emailKey}`);
         setUndergradGwa(storedGwa || (isFreshUser ? '3.00' : '1.45'));
-
-        const storedDrills = localStorage.getItem(`medly_solved_drills_${emailKey}`);
         setSolvedDrills(storedDrills ? parseInt(storedDrills) : 0);
-
-        const storedAccuracy = localStorage.getItem(`medly_accuracy_index_${emailKey}`);
         setAccuracyIndex(storedAccuracy || (isFreshUser ? '0.0%' : '86.4%'));
 
-        const storedHabits = localStorage.getItem(`medly_habit_tracker_${emailKey}`);
         setHabitTracker(storedHabits ? JSON.parse(storedHabits) : {
           'Active Recall Spacing': !isFreshUser,
           'Physics Formulas Revision': false,
           'Anki Loop Queue': !isFreshUser
         });
 
-        const storedStudyLogs = localStorage.getItem(`medly_study_logs_${emailKey}`);
         setStudyLogs(storedStudyLogs ? JSON.parse(storedStudyLogs) : (isFreshUser ? [] : [
           { id: 'sl-1', subject: 'Biology', hours: 3, date: '2026-06-18' },
           { id: 'sl-2', subject: 'Physics', hours: 2, date: '2026-06-17' }
         ]));
 
-        const storedMoodLogs = localStorage.getItem(`medly_mood_logs_${emailKey}`);
         setMoodLogs(storedMoodLogs ? JSON.parse(storedMoodLogs) : (isFreshUser ? [] : [
           { id: 'ml-1', mood: 'Focused 🧠', date: '2026-06-18', note: 'Mastered Krebs cycle kinetics.' }
         ]));
 
-        const storedFailLogs = localStorage.getItem(`medly_failed_answers_logs_${emailKey}`);
         setFailedAnswersLogs(storedFailLogs ? JSON.parse(storedFailLogs) : (isFreshUser ? [] : [
           { id: 'log-1', subject: 'Physics', consecutiveFailCount: 3, alertLvl: 'High Danger', lastFailureDate: 'Just now', remedialTopic: 'Kinematics Speed Vector' },
           { id: 'log-2', subject: 'Chemistry', consecutiveFailCount: 2, alertLvl: 'Moderate Warning', lastFailureDate: '2 hours ago', remedialTopic: 'Stoichiometry Mass' }
@@ -383,23 +453,9 @@ export default function App() {
       }
 
       // Changes came from the student profile (e.g., Preference Theme edit or Upgrade checkout)
-      setUsersList(prev => {
-        const match = prev.find(u => u.email.trim().toLowerCase() === currentEmailClean);
-        if (match) {
-          if (match.name !== studentName || match.suite !== subscriptionSimMode) {
-            return prev.map(u => u.email.trim().toLowerCase() === currentEmailClean
-              ? { ...u, name: studentName, suite: subscriptionSimMode }
-              : u
-            );
-          }
-          return prev;
-        } else {
-          return [
-            { id: `usr-${Date.now()}`, name: studentName, email: studentEmail, suite: subscriptionSimMode },
-            ...prev
-          ];
-        }
-      });
+      // Since usersList is fully populated via Firestore onSnapshot in real time,
+      // we DO NOT need to manually append or update usersList here anymore.
+      // This avoids potential render loops.
 
       // Update the reference with the newly updated state variables
       lastSyncRef.current = {
@@ -505,7 +561,9 @@ export default function App() {
   }, [moodLogs, studentEmail]);
 
   const wipeAllData = () => {
-    localStorage.clear();
+    try {
+      localStorage.clear();
+    } catch {}
     setStreak(0);
     setSolvedDrills(0);
     setNmatGoal(95);
@@ -651,7 +709,9 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('medly_srs_concepts', JSON.stringify(srsConcepts));
+    try {
+      localStorage.setItem('medly_srs_concepts', JSON.stringify(srsConcepts));
+    } catch {}
   }, [srsConcepts]);
 
   // Sub tab for Regulatory Prep view

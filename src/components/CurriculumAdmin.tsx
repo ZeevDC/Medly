@@ -216,11 +216,15 @@ export default function CurriculumAdmin({
   const [ticketReplies, setTicketReplies] = useState<Record<string, string>>({});
 
   // Live account user registry states from Firestore live_users collection
-  const [liveUsersFromDb, setLiveUsersFromDb] = useState<any[]>([]);
+  const [liveUsersFromDb, setLiveUsersFromDb] = useState<any[]>(usersList);
   const [loadingLiveUsers, setLoadingLiveUsers] = useState(false);
   const [userSearch, setUserSearch] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
+
+  useEffect(() => {
+    setLiveUsersFromDb(usersList);
+  }, [usersList]);
 
   const fetchLiveUsers = async () => {
     setLoadingLiveUsers(true);
@@ -228,7 +232,12 @@ export default function CurriculumAdmin({
       const qSnap = await getDocs(collection(db, "live_users"));
       const list: any[] = [];
       qSnap.forEach(d => {
-        list.push({ docId: d.id, ...d.data() });
+        const docId = d.id;
+        // Filter out pre-built / mock / competitor users from admin view too
+        if (docId.startsWith("usr_comp_") || (d.data().email || '').trim().toLowerCase().endsWith("@example.com")) {
+          return;
+        }
+        list.push({ docId: docId, id: docId, ...d.data() });
       });
       setLiveUsersFromDb(list);
     } catch (err) {

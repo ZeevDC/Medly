@@ -1,22 +1,45 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import firebaseConfig from "../../firebase-applet-config.json";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB9bolZfOM-VjcthhSzUE4dSpz8nbXqrFs",
-  authDomain: "medly-74a38.firebaseapp.com",
-  projectId: "medly-74a38",
-  storageBucket: "medly-74a38.firebasestorage.app",
-  messagingSenderId: "502286119793",
-  appId: "1:502286119793:web:e3b23b0d655d33e25ebcd0",
-  measurementId: "G-7M0EDBC6SN"
-};
+// Resolve config for maximum compatibility across different bundlers/ESM environments
+const actualConfig = (firebaseConfig as any).default || firebaseConfig;
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app: any;
+try {
+  app = initializeApp(actualConfig);
+} catch (e) {
+  console.warn("Firebase initializeApp failed:", e);
+}
 
-// Initialize Firestore and export
-export const db = getFirestore(app);
+// Initialize Firestore with the specific databaseId if defined, otherwise default
+let db: any;
+try {
+  db = app ? getFirestore(app, actualConfig.firestoreDatabaseId || undefined) : {};
+} catch (e) {
+  console.warn("Firebase Firestore initialization failed:", e);
+  db = {};
+}
 
 // Initialize and export Auth
-export const auth = getAuth(app);
+let auth: any;
+try {
+  auth = app ? getAuth(app) : null;
+} catch (e) {
+  console.warn("Firebase Auth initialization failed:", e);
+}
+
+// Ensure auth is not null/undefined to prevent runtime import crashes
+if (!auth) {
+  auth = {
+    currentUser: null,
+    onAuthStateChanged: (callback: any) => {
+      // Return a dummy unsubscribe function
+      return () => {};
+    }
+  } as any;
+}
+
+export { db, auth };
+

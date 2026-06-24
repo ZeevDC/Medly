@@ -45,7 +45,11 @@ interface TopicsTrackerProps {
 export default function TopicsTracker({ onAskAi }: TopicsTrackerProps) {
   // Read active theme config to stay cohesive with the selected theme
   const [currentTheme] = useState<string>(() => {
-    return localStorage.getItem('medly_current_theme') || 'cozy-bear';
+    try {
+      return localStorage.getItem('medly_current_theme') || 'cozy-bear';
+    } catch {
+      return 'cozy-bear';
+    }
   });
   const themeCfg: ThemeConfig = getTheme(currentTheme);
 
@@ -66,7 +70,9 @@ export default function TopicsTracker({ onAskAi }: TopicsTrackerProps) {
   const [showOnlyWeakspots, setShowOnlyWeakspots] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('medly_topic_statuses_v3', JSON.stringify(topicStatuses));
+    try {
+      localStorage.setItem('medly_topic_statuses_v3', JSON.stringify(topicStatuses));
+    } catch {}
   }, [topicStatuses]);
 
   // FULL COMPACT STUDY SYLLABUS CORRESPONDING STRICTLY TO USER-REQUESTED SYLLABUS LIST
