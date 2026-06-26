@@ -297,18 +297,26 @@ export default function App() {
       const q = collection(db, "live_users");
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const list: any[] = [];
+        let hasAdmin = false;
+
         snapshot.forEach((doc) => {
           const data = doc.data();
           const docId = doc.id;
+          const emailClean = (data.email || '').trim().toLowerCase();
+          
+          if (emailClean === 'studyfilesbyz@gmail.com') {
+            hasAdmin = true;
+          }
+
           // Filter out pre-built / mock / competitor users
-          if (docId.startsWith("usr_comp_") || (data.email || '').trim().toLowerCase().endsWith("@example.com")) {
+          if (docId.startsWith("usr_comp_") || emailClean.endsWith("@example.com")) {
             return;
           }
           list.push({
             id: docId,
             docId: docId,
             name: data.name || "Anonymous Pre-Med",
-            email: data.email || "",
+            email: emailClean,
             suite: data.suite || "Free Student Tier",
             premed: data.premed || "Pre-Med Student",
             score: typeof data.score === "number" ? data.score : 85.0,
@@ -316,9 +324,59 @@ export default function App() {
             lastUpdated: data.lastUpdated || Date.now()
           });
         });
+
+        // Auto-seed studyfilesbyz@gmail.com if not present in Firestore
+        if (!hasAdmin) {
+          const adminDocId = "usr_self_studyfilesbyz_gmail_com";
+          setDoc(doc(db, "live_users", adminDocId), {
+            id: adminDocId,
+            name: "studyfilesbyz",
+            email: "studyfilesbyz@gmail.com",
+            suite: "Clinical Premium (Admin)",
+            premed: "UP Manila (BS Biology)",
+            score: 95.0,
+            solvedDrills: 120,
+            lastUpdated: Date.now()
+          }, { merge: true }).catch(err => {
+            console.warn("Seeding studyfilesbyz admin account pending configuration:", err);
+          });
+          
+          // Also immediately append to list for real-time responsiveness if firestore write is pending/blocked
+          const alreadyInList = list.some(u => u.email === 'studyfilesbyz@gmail.com');
+          if (!alreadyInList) {
+            list.push({
+              id: adminDocId,
+              docId: adminDocId,
+              name: "studyfilesbyz",
+              email: "studyfilesbyz@gmail.com",
+              suite: "Clinical Premium (Admin)",
+              premed: "UP Manila (BS Biology)",
+              score: 95.0,
+              solvedDrills: 120,
+              lastUpdated: Date.now()
+            });
+          }
+        }
+
         setUsersList(list);
       }, (error) => {
         console.warn("Error subscribing to live_users in App.tsx:", error);
+        
+        // Dynamic fallback if offline or permissions block
+        const fallbackList = [
+          {
+            id: "usr_self_studyfilesbyz_gmail_com",
+            docId: "usr_self_studyfilesbyz_gmail_com",
+            name: "studyfilesbyz",
+            email: "studyfilesbyz@gmail.com",
+            suite: "Clinical Premium (Admin)",
+            premed: "UP Manila (BS Biology)",
+            score: 95.0,
+            solvedDrills: 120,
+            lastUpdated: Date.now()
+          }
+        ];
+        setUsersList(fallbackList);
       });
       return () => unsubscribe();
     } catch (e) {

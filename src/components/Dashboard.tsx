@@ -127,7 +127,7 @@ export default function Dashboard({
 
     // Resolve name of current user from the registry list
     const selfUser = usersList.find(u => (u.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase());
-    const selfName = selfUser ? selfUser.name : "Juan Dela Cruz";
+    const selfName = selfUser ? selfUser.name : ((currentUserEmail || '').trim().toLowerCase() === 'studyfilesbyz@gmail.com' ? 'studyfilesbyz' : "Juan Dela Cruz");
     const premed = "UP Manila (BS Biology)";
 
     const selfDoc = {
@@ -163,11 +163,9 @@ export default function Dashboard({
       );
 
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        if (snapshot.empty) {
-          setFirebaseRankings([]);
-          setFirebaseLoading(false);
-        } else {
-          const rankings = snapshot.docs
+        let rankings: any[] = [];
+        if (!snapshot.empty) {
+          rankings = snapshot.docs
             .map(doc => {
               const data = doc.data();
               const isSelf = (data.email || '').trim().toLowerCase() === (currentUserEmail || '').trim().toLowerCase();
@@ -182,12 +180,46 @@ export default function Dashboard({
               };
             })
             .filter(user => !user.id.startsWith("usr_comp_") && !(user.email || '').trim().toLowerCase().endsWith("@example.com"));
-          setFirebaseRankings(rankings);
-          setFirebaseLoading(false);
         }
+        
+        // Ensure studyfilesbyz@gmail.com is always included in the live rankings
+        const hasAdmin = rankings.some(u => (u.email || '').trim().toLowerCase() === 'studyfilesbyz@gmail.com');
+        if (!hasAdmin) {
+          const isSelf = (currentUserEmail || '').trim().toLowerCase() === 'studyfilesbyz@gmail.com';
+          rankings.push({
+            id: "usr_self_studyfilesbyz_gmail_com",
+            name: "studyfilesbyz",
+            premed: "UP Manila (BS Biology)",
+            suite: "Clinical Premium (Admin)",
+            score: 95.0,
+            tag: isSelf ? 'YOU' : 'VIP',
+            email: "studyfilesbyz@gmail.com"
+          });
+        }
+        
+        // Sort rankings by score desc
+        rankings.sort((a, b) => b.score - a.score);
+
+        setFirebaseRankings(rankings);
+        setFirebaseLoading(false);
       }, (error) => {
         console.warn("Firebase rankings snapshot error:", error);
-        setFirebaseRankings([]);
+        
+        // Fallback rankings guaranteed to include studyfilesbyz
+        const isSelf = (currentUserEmail || '').trim().toLowerCase() === 'studyfilesbyz@gmail.com';
+        const fallbackRankings = [
+          {
+            id: "usr_self_studyfilesbyz_gmail_com",
+            name: "studyfilesbyz",
+            premed: "UP Manila (BS Biology)",
+            suite: "Clinical Premium (Admin)",
+            score: 95.0,
+            tag: isSelf ? 'YOU' : 'VIP',
+            email: "studyfilesbyz@gmail.com"
+          }
+        ];
+        
+        setFirebaseRankings(fallbackRankings);
         setFirebaseLoading(false);
         handleFirestoreError(error, OperationType.GET, "live_users");
       });
