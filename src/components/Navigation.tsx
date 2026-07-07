@@ -27,6 +27,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { getTheme } from '../utils/themeStyles';
+import { isCloudConnected } from '../lib/firebase';
 
 interface NavigationProps {
   activeTab: string;
@@ -131,15 +132,37 @@ export default function Navigation({
             </div>
 
             {/* Quick status bar */}
-            <div className="hidden md:flex items-center space-x-4 text-sm ml-6">
+            <div className="hidden md:flex items-center space-x-3 text-sm ml-6">
               <div className={`flex items-center space-x-1.5 px-3 py-1 ${themeCfg.accentBg} ${themeCfg.accentText} ${themeCfg.accentBorder} border rounded-full font-bold text-xs`}>
                 <Award className="w-3.5 h-3.5" />
                 <span>Target: <strong className="font-black">{nmatGoal > 0 ? `${nmatGoal}+ PR` : 'Not Set'}</strong></span>
               </div>
 
-              <div className="flex items-center space-x-1.5 px-3 py-1 bg-amber-50 text-amber-805 rounded-full font-black text-xs border border-amber-200 shadow-2xs animate-pulse">
+              <div className="flex items-center space-x-1.5 px-3 py-1 bg-amber-50 text-amber-805 rounded-full font-black text-xs border border-amber-200 shadow-2xs">
                 <Flame className="w-3.5 h-3.5 text-amber-600" />
                 <span>Streak: {streak} {streak === 1 ? 'day' : 'days'} {themeCfg.emoji}</span>
+              </div>
+
+              <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full font-bold text-xs border shadow-3xs ${
+                isCloudConnected 
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                  : 'bg-slate-50 text-slate-500 border-slate-200'
+              }`} title={isCloudConnected ? "Connected to Cloud Firestore" : "Running in Local Sandbox"}>
+                {isCloudConnected ? (
+                  <>
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    <Wifi className="w-3 h-3 text-emerald-600" />
+                    <span>Cloud Active</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3 h-3 text-slate-400" />
+                    <span>Local Sandbox</span>
+                  </>
+                )}
               </div>
             </div>
 

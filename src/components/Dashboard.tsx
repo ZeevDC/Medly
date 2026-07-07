@@ -505,8 +505,8 @@ export default function Dashboard({
   const [customName, setCustomName] = useState('');
   const [customAbbr, setCustomAbbr] = useState('');
   const [customLocation, setCustomLocation] = useState('');
-  const [customMinNmat, setCustomMinNmat] = useState(85);
-  const [customCompNmat, setCustomCompNmat] = useState(90);
+  const [customMinNmat, setCustomMinNmat] = useState<number | "">(85);
+  const [customCompNmat, setCustomCompNmat] = useState<number | "">(90);
   const [customDeadline, setCustomDeadline] = useState('March 1, 2027');
   const [customPortalLink, setCustomPortalLink] = useState('https://');
 
@@ -514,8 +514,8 @@ export default function Dashboard({
   const [editName, setEditName] = useState('');
   const [editAbbr, setEditAbbr] = useState('');
   const [editLocation, setEditLocation] = useState('');
-  const [editMinNmat, setEditMinNmat] = useState(85);
-  const [editCompNmat, setEditCompNmat] = useState(90);
+  const [editMinNmat, setEditMinNmat] = useState<number | "">(85);
+  const [editCompNmat, setEditCompNmat] = useState<number | "">(90);
   const [editDeadline, setEditDeadline] = useState('');
   const [editPortalLink, setEditPortalLink] = useState('');
 
@@ -555,8 +555,8 @@ export default function Dashboard({
       name: customName.trim(),
       abbreviation: customAbbr.trim().toUpperCase(),
       location: customLocation.trim() || 'Philippines',
-      requiredNmatMin: customMinNmat,
-      competitiveNmat: customCompNmat,
+      requiredNmatMin: Number(customMinNmat) || 0,
+      competitiveNmat: Number(customCompNmat) || 0,
       weightGwa: 'Calculated GWA Weights',
       weightNmat: 'NMAT percentile score target',
       deadline: customDeadline.trim() || 'TBD',
@@ -609,8 +609,8 @@ export default function Dashboard({
           name: editName.trim(),
           abbreviation: editAbbr.trim().toUpperCase(),
           location: editLocation.trim(),
-          requiredNmatMin: editMinNmat,
-          competitiveNmat: editCompNmat,
+          requiredNmatMin: Number(editMinNmat) || 0,
+          competitiveNmat: Number(editCompNmat) || 0,
           deadline: editDeadline.trim(),
           link: editPortalLink.trim()
         };
@@ -693,25 +693,27 @@ export default function Dashboard({
               </div>
 
               <div>
-                <label className="block text-[9px] uppercase font-black text-slate-400 mb-1">Required Min NMAT</label>
+                <label className="block text-[9px] uppercase font-black text-slate-400 mb-1">Required Min NMAT (Optional)</label>
                 <input
                   type="number"
-                  min="40"
+                  min="0"
                   max="99"
+                  placeholder="Optional"
                   value={customMinNmat}
-                  onChange={(e) => setCustomMinNmat(parseInt(e.target.value) || 85)}
+                  onChange={(e) => setCustomMinNmat(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                   className="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none font-black text-slate-705"
                 />
               </div>
 
               <div>
-                <label className="block text-[9px] uppercase font-black text-slate-400 mb-1">Competitive PR Target</label>
+                <label className="block text-[9px] uppercase font-black text-slate-400 mb-1">Competitive PR Target (Optional)</label>
                 <input
                   type="number"
-                  min="40"
+                  min="0"
                   max="99"
+                  placeholder="Optional"
                   value={customCompNmat}
-                  onChange={(e) => setCustomCompNmat(parseInt(e.target.value) || 90)}
+                  onChange={(e) => setCustomCompNmat(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                   className="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none font-black text-slate-705"
                 />
               </div>
@@ -798,25 +800,27 @@ export default function Dashboard({
               </div>
 
               <div>
-                <label className="block text-[9px] uppercase font-black text-amber-700 mb-1">Required Min NMAT</label>
+                <label className="block text-[9px] uppercase font-black text-amber-700 mb-1">Required Min NMAT (Optional)</label>
                 <input
                   type="number"
-                  min="40"
+                  min="0"
                   max="99"
+                  placeholder="Optional"
                   value={editMinNmat}
-                  onChange={(e) => setEditMinNmat(parseInt(e.target.value) || 85)}
+                  onChange={(e) => setEditMinNmat(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                   className="w-full p-2 bg-white border border-amber-200 rounded-lg outline-none font-black text-slate-705"
                 />
               </div>
 
               <div>
-                <label className="block text-[9px] uppercase font-black text-amber-700 mb-1">Competitive PR Target</label>
+                <label className="block text-[9px] uppercase font-black text-amber-700 mb-1">Competitive PR Target (Optional)</label>
                 <input
                   type="number"
-                  min="40"
+                  min="0"
                   max="99"
+                  placeholder="Optional"
                   value={editCompNmat}
-                  onChange={(e) => setEditCompNmat(parseInt(e.target.value) || 90)}
+                  onChange={(e) => setEditCompNmat(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                   className="w-full p-2 bg-white border border-amber-200 rounded-lg outline-none font-black text-slate-705"
                 />
               </div>
@@ -904,7 +908,7 @@ export default function Dashboard({
                 </div>
 
                 <div className="border-t border-slate-105 mt-3 pt-2.5 flex justify-between items-center text-[10px] text-slate-400 font-bold">
-                  <span>Min PR: <strong className="text-slate-700">{school.requiredNmatMin}</strong></span>
+                  <span>Min PR: <strong className="text-slate-700">{school.requiredNmatMin || 'Optional'}</strong></span>
                   {school.link && school.link !== 'https://' && (
                     <a
                       href={school.link}
@@ -966,8 +970,8 @@ export default function Dashboard({
                       </div>
                     </div>
                     <div className="text-right bg-sky-50 px-2 py-1 rounded flex-shrink-0 ml-2">
-                      <span className="font-black text-[11px] text-sky-700 block">{school.competitiveNmat}+ PR</span>
-                      <span className="block text-[9px] text-slate-400">Min: {school.requiredNmatMin}</span>
+                      <span className="font-black text-[11px] text-sky-700 block">{school.competitiveNmat ? `${school.competitiveNmat}+ PR` : 'Optional'}</span>
+                      <span className="block text-[9px] text-slate-400">Min: {school.requiredNmatMin || 'Optional'}</span>
                     </div>
                   </div>
                 ))}
@@ -1335,7 +1339,7 @@ export default function Dashboard({
                             </div>
                             <div className="text-left sm:text-right flex flex-col sm:items-end gap-1 flex-shrink-0">
                               <span className={`text-[10px] font-black uppercase tracking-wider ${themeCfg.accentText} ${themeCfg.accentBg} px-2.5 py-1 rounded-lg`}>
-                                NMAT Cut-off Score: {school.requiredNmatMin} PR
+                                NMAT Cut-off Score: {school.requiredNmatMin ? `${school.requiredNmatMin} PR` : 'Optional'}
                               </span>
                               <span className="text-[9.5px] text-slate-400 block font-bold">
                                 {isExpanded ? 'Click to collapse ▲' : 'Click to view details ▼'}

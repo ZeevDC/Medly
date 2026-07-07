@@ -110,8 +110,8 @@ export default function CurriculumAdmin({
   const [addSchoolName, setAddSchoolName] = useState('');
   const [addSchoolAbbr, setAddSchoolAbbr] = useState('');
   const [addSchoolLoc, setAddSchoolLoc] = useState('');
-  const [addSchoolMinNmat, setAddSchoolMinNmat] = useState(85);
-  const [addSchoolCompNmat, setAddSchoolCompNmat] = useState(95);
+  const [addSchoolMinNmat, setAddSchoolMinNmat] = useState<number | "">(85);
+  const [addSchoolCompNmat, setAddSchoolCompNmat] = useState<number | "">(95);
   const [addSchoolGwaW, setAddSchoolGwaW] = useState('50% State Weight');
   const [addSchoolNmatW, setAddSchoolNmatW] = useState('50% PR Weight');
   const [addSchoolDeadline, setAddSchoolDeadline] = useState('March 15, 2027');
@@ -147,8 +147,8 @@ export default function CurriculumAdmin({
       name: addSchoolName.trim(),
       abbreviation: cleanAbbr,
       location: addSchoolLoc.trim() || 'Manila, Philippines',
-      requiredNmatMin: addSchoolMinNmat,
-      competitiveNmat: addSchoolCompNmat,
+      requiredNmatMin: Number(addSchoolMinNmat) || 0,
+      competitiveNmat: Number(addSchoolCompNmat) || 0,
       weightGwa: addSchoolGwaW.trim() || 'Balanced weight',
       weightNmat: addSchoolNmatW.trim() || 'Strong PR focus',
       deadline: addSchoolDeadline.trim() || 'TBD',
@@ -689,26 +689,26 @@ export default function CurriculumAdmin({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">NMAT Cut-off Score</label>
+                    <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">NMAT Cut-off Score (Optional)</label>
                     <input
                       type="number"
-                      min="10"
+                      min="0"
                       max="99"
-                      required
+                      placeholder="Optional"
                       value={addSchoolMinNmat}
-                      onChange={(e) => setAddSchoolMinNmat(parseInt(e.target.value) || 40)}
+                      onChange={(e) => setAddSchoolMinNmat(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                       className="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none font-bold text-slate-705"
                     />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">Competitive PR Goal</label>
+                    <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">Competitive PR Goal (Optional)</label>
                     <input
                       type="number"
-                      min="10"
+                      min="0"
                       max="99"
-                      required
+                      placeholder="Optional"
                       value={addSchoolCompNmat}
-                      onChange={(e) => setAddSchoolCompNmat(parseInt(e.target.value) || 40)}
+                      onChange={(e) => setAddSchoolCompNmat(e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                       className="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none font-bold text-slate-705"
                     />
                   </div>
@@ -927,24 +927,26 @@ export default function CurriculumAdmin({
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">NMAT Cut-off Score</label>
+                      <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">NMAT Cut-off Score (Optional)</label>
                       <input
                         type="number"
-                        min="10"
+                        min="0"
                         max="99"
+                        placeholder="Optional"
                         value={targetSchool.requiredNmatMin}
-                        onChange={(e) => updateSchoolField('requiredNmatMin', parseInt(e.target.value) || 40)}
+                        onChange={(e) => updateSchoolField('requiredNmatMin', e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                         className="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none font-black text-slate-705"
                       />
                     </div>
                     <div>
-                      <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">Competitive PR</label>
+                      <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">Competitive PR (Optional)</label>
                       <input
                         type="number"
-                        min="10"
+                        min="0"
                         max="99"
+                        placeholder="Optional"
                         value={targetSchool.competitiveNmat}
-                        onChange={(e) => updateSchoolField('competitiveNmat', parseInt(e.target.value) || 80)}
+                        onChange={(e) => updateSchoolField('competitiveNmat', e.target.value === "" ? "" : parseInt(e.target.value) || 0)}
                         className="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none font-black text-slate-705"
                       />
                     </div>

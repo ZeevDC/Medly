@@ -42,5 +42,18 @@ if (!auth) {
   } as any;
 }
 
+const isFirebaseUnconfigured = () => {
+  try {
+    const config = (firebaseConfig as any).default || firebaseConfig;
+    return !config.apiKey || 
+           config.apiKey.includes('REPLACE_WITH') || 
+           config.apiKey === '';
+  } catch {
+    return true;
+  }
+};
+
+export const isCloudConnected = !isFirebaseUnconfigured() && !!app && !auth._isMock;
+
 export { db, auth };
 

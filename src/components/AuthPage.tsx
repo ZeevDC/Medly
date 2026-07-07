@@ -6,6 +6,18 @@ import {
   User as FirebaseUser
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import firebaseConfig from '../../firebase-applet-config.json';
+
+const isFirebaseUnconfigured = () => {
+  try {
+    const config = (firebaseConfig as any).default || firebaseConfig;
+    return !config.apiKey || 
+           config.apiKey.includes('REPLACE_WITH') || 
+           config.apiKey === '';
+  } catch {
+    return true;
+  }
+};
 import { 
   Sparkles, 
   Mail, 
@@ -142,7 +154,14 @@ export default function AuthPage({ onSuccess, defaultEmail }: AuthPageProps) {
         } catch (firebaseErr: any) {
           const errMsgLower = (firebaseErr.message || '').toLowerCase();
           const errCodeLower = (firebaseErr.code || '').toLowerCase();
-          const isApiKeyError = errMsgLower.includes('api-key') || errCodeLower.includes('api-key') || errMsgLower.includes('invalid-api-key') || errCodeLower.includes('invalid-api-key') || errMsgLower.includes('api key') || errMsgLower.includes('api_key') || errMsgLower.includes('key-not-valid') || errMsgLower.includes('firebase: error');
+          const isApiKeyError = isFirebaseUnconfigured() || 
+                                errMsgLower.includes('api-key') || 
+                                errCodeLower.includes('api-key') || 
+                                errMsgLower.includes('invalid-api-key') || 
+                                errCodeLower.includes('invalid-api-key') || 
+                                errMsgLower.includes('api key') || 
+                                errMsgLower.includes('api_key') || 
+                                errMsgLower.includes('key-not-valid');
           
           if (isApiKeyError) {
             const localUser = verifyLocalUserAuth(emailTrim, password);
@@ -191,7 +210,14 @@ export default function AuthPage({ onSuccess, defaultEmail }: AuthPageProps) {
         } catch (firebaseErr: any) {
           const errMsgLower = (firebaseErr.message || '').toLowerCase();
           const errCodeLower = (firebaseErr.code || '').toLowerCase();
-          const isApiKeyError = errMsgLower.includes('api-key') || errCodeLower.includes('api-key') || errMsgLower.includes('invalid-api-key') || errCodeLower.includes('invalid-api-key') || errMsgLower.includes('api key') || errMsgLower.includes('api_key') || errMsgLower.includes('key-not-valid') || errMsgLower.includes('firebase: error');
+          const isApiKeyError = isFirebaseUnconfigured() || 
+                                errMsgLower.includes('api-key') || 
+                                errCodeLower.includes('api-key') || 
+                                errMsgLower.includes('invalid-api-key') || 
+                                errCodeLower.includes('invalid-api-key') || 
+                                errMsgLower.includes('api key') || 
+                                errMsgLower.includes('api_key') || 
+                                errMsgLower.includes('key-not-valid');
 
           if (isApiKeyError) {
             saveLocalUserAuth(fullName.trim(), emailTrim, password);
@@ -207,7 +233,14 @@ export default function AuthPage({ onSuccess, defaultEmail }: AuthPageProps) {
       let errMsg = err.message || "Authentication rejected.";
       const errMsgLower = errMsg.toLowerCase();
       const errCodeLower = (err.code || '').toLowerCase();
-      const isApiKeyError = errMsgLower.includes('api-key') || errCodeLower.includes('api-key') || errMsgLower.includes('invalid-api-key') || errCodeLower.includes('invalid-api-key') || errMsgLower.includes('api key') || errMsgLower.includes('api_key') || errMsgLower.includes('key-not-valid') || errMsgLower.includes('firebase: error');
+      const isApiKeyError = isFirebaseUnconfigured() || 
+                            errMsgLower.includes('api-key') || 
+                            errCodeLower.includes('api-key') || 
+                            errMsgLower.includes('invalid-api-key') || 
+                            errCodeLower.includes('invalid-api-key') || 
+                            errMsgLower.includes('api key') || 
+                            errMsgLower.includes('api_key') || 
+                            errMsgLower.includes('key-not-valid');
 
       if (isApiKeyError) {
         // Safe instant auto-bypass so they are NEVER locked out by API key unconfigured issues!
