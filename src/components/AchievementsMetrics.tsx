@@ -25,7 +25,7 @@ export default function AchievementsMetrics({
 }: AchievementsMetricsProps) {
   
   const isFresh = (currentUserEmail || '').trim().toLowerCase() !== 'studyfilesbyz@gmail.com';
-  const isBasicTracker = userSuite === 'Free Student Tier' || userSuite === 'Pro Suite (₱79)';
+  const isBasicTracker = false;
 
   // Calculate simulated pass probability based on GWA and solved drills
   const baseGwa = parseFloat(undergradGwa) || (isFresh ? 3.00 : 1.45);

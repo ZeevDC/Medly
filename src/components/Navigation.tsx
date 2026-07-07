@@ -72,7 +72,6 @@ export default function Navigation({
     { id: 'diagnostic-weakspots', label: 'Diagnostic Weakspots', icon: AlertTriangle, desc: 'Failed drills warning indicators logs' },
     { id: 'study-planner-calendar', label: 'Pre-Med Calendar', icon: Calendar, desc: 'Log schedules, student habits, focus hours, mood logs' },
     { id: 'announcements-news', label: 'NMAT Announcements', icon: Bell, desc: 'Official filings bulletins and notifications' },
-    { id: 'premium-page', label: 'Premium Pass', icon: Award, desc: 'Unlock Medly Pro & Clinical Suite comparative blueprints' },
     { id: 'preferences-theme', label: 'Student ID & Settings', icon: Sliders, desc: 'Cozy badge card, custom themes, custom API keys' },
     { id: 'feedback-logs', label: 'Submit Feedback', icon: MessageSquare, desc: 'Help Medly curriculum coordinators polish the platform' },
   ];

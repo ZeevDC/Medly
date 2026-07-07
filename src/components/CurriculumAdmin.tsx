@@ -270,7 +270,7 @@ export default function CurriculumAdmin({
       id: docId,
       name: newUserName.trim(),
       email: emailClean,
-      suite: 'Free Student Tier',
+      suite: 'Lifetime Pass (₱249)',
       premed: 'Seeded via Admin Registry',
       score: 85.0,
       solvedDrills: 0,
@@ -535,16 +535,9 @@ export default function CurriculumAdmin({
                     {/* Suite select editor dropdown */}
                     <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-200/40 font-semibold text-[11px]">
                       <span className="text-[9.5px] text-slate-450 font-black uppercase">Suite Tier:</span>
-                      <select
-                        value={user.suite || "Free Student Tier"}
-                        onChange={(e) => handleUpdateSuiteValue(user, e.target.value)}
-                        className="p-1 px-2 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none cursor-pointer text-slate-705"
-                      >
-                        <option value="Free Student Tier">Free Student Tier</option>
-                        <option value="Pro Suite (₱79)">Pro Suite (₱79)</option>
-                        <option value="Clinical Suite (₱149)">Clinical Suite (₱149)</option>
-                        <option value="Lifetime Pass (₱249)">Lifetime Pass (₱249)</option>
-                      </select>
+                      <span className="px-2.5 py-1 bg-indigo-50 text-indigo-800 border border-indigo-150 rounded-xl text-xs font-black uppercase tracking-wider">
+                        Lifetime Pass
+                      </span>
                     </div>
                   </div>
                 );

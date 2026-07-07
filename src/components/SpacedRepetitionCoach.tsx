@@ -25,7 +25,7 @@ export default function SpacedRepetitionCoach({ userSuite = 'Free Student Tier',
 
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  const isLocked = userSuite === 'Free Student Tier' || userSuite === 'Pro Suite (₱79)';
+  const isLocked = false;
 
   if (isLocked) {
     return (

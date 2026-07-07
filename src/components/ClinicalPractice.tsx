@@ -50,7 +50,7 @@ export default function ClinicalPractice({
   const [sprintScore, setSprintScore] = useState(0);
   const [consecutiveMisses, setConsecutiveMisses] = useState(0);
 
-  const isLocked = userSuite === 'Free Student Tier';
+  const isLocked = false;
 
   if (isLocked) {
     return (

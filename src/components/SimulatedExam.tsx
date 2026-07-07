@@ -27,7 +27,7 @@ export default function SimulatedExam({ userSuite = 'Free Student Tier', onViewP
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [timeLeft, setTimeLeft] = useState(8100); // 2 hours 15 mins in seconds
 
-  const isLocked = userSuite === 'Free Student Tier' || userSuite === 'Pro Suite (₱79)';
+  const isLocked = false;
 
   if (isLocked) {
     return (

@@ -157,7 +157,7 @@ export default function App() {
 
     const emailKey = email.trim().toLowerCase();
     const isSpecialAdmin = emailKey === 'studyfilesbyz@gmail.com';
-    const targetSuite = isSpecialAdmin ? 'Lifetime Pass (₱249)' : 'Free Student Tier';
+    const targetSuite = 'Lifetime Pass (₱249)';
 
     setSubscriptionSimMode(targetSuite);
     try {
@@ -222,12 +222,7 @@ export default function App() {
   });
 
   const [subscriptionSimMode, setSubscriptionSimMode] = useState<string>(() => {
-    try {
-      const stored = localStorage.getItem('medly_subscription_mode');
-      return stored || 'Free Student Tier';
-    } catch {
-      return 'Free Student Tier';
-    }
+    return 'Lifetime Pass (₱249)';
   });
 
   // State hooks for Student ID / Profile Preferences Theme
@@ -317,7 +312,7 @@ export default function App() {
             docId: docId,
             name: data.name || "Anonymous Pre-Med",
             email: emailClean,
-            suite: data.suite || "Free Student Tier",
+            suite: "Lifetime Pass (₱249)",
             premed: data.premed || "Pre-Med Student",
             score: typeof data.score === "number" ? data.score : 85.0,
             solvedDrills: typeof data.solvedDrills === "number" ? data.solvedDrills : 0,
@@ -332,7 +327,7 @@ export default function App() {
             id: adminDocId,
             name: "studyfilesbyz",
             email: "studyfilesbyz@gmail.com",
-            suite: "Clinical Premium (Admin)",
+            suite: "Lifetime Pass (₱249)",
             premed: "UP Manila (BS Biology)",
             score: 95.0,
             solvedDrills: 120,
@@ -349,7 +344,7 @@ export default function App() {
               docId: adminDocId,
               name: "studyfilesbyz",
               email: "studyfilesbyz@gmail.com",
-              suite: "Clinical Premium (Admin)",
+              suite: "Lifetime Pass (₱249)",
               premed: "UP Manila (BS Biology)",
               score: 95.0,
               solvedDrills: 120,
@@ -369,7 +364,7 @@ export default function App() {
             docId: "usr_self_studyfilesbyz_gmail_com",
             name: "studyfilesbyz",
             email: "studyfilesbyz@gmail.com",
-            suite: "Clinical Premium (Admin)",
+            suite: "Lifetime Pass (₱249)",
             premed: "UP Manila (BS Biology)",
             score: 95.0,
             solvedDrills: 120,
@@ -397,7 +392,7 @@ export default function App() {
           id: docId,
           name: studentName,
           email: emailClean,
-          suite: subscriptionSimMode || "Free Student Tier",
+          suite: "Lifetime Pass (₱249)",
           premed: "UP Manila (BS Biology)", // default premed
           lastUpdated: Date.now()
         }, { merge: true });
